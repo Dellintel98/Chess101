@@ -332,6 +332,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: ExitButton
       objectReference: {fileID: 0}
+    - target: {fileID: 4828793545114515527, guid: 35c97d4949eef7943964357510785295,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1484096168}
+    - target: {fileID: 4828793545114515527, guid: 35c97d4949eef7943964357510785295,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: QuitGame
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 35c97d4949eef7943964357510785295, type: 3}
 --- !u!224 &1043796087 stripped
@@ -943,7 +953,7 @@ PrefabInstance:
     - target: {fileID: 415121412655066231, guid: 675b3e2b9b5ea8b43967b3538e911f69,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: -134.9
       objectReference: {fileID: 0}
     - target: {fileID: 415121412655066231, guid: 675b3e2b9b5ea8b43967b3538e911f69,
         type: 3}
@@ -953,7 +963,7 @@ PrefabInstance:
     - target: {fileID: 415121412655066231, guid: 675b3e2b9b5ea8b43967b3538e911f69,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 497.7
+      value: 228
       objectReference: {fileID: 0}
     - target: {fileID: 415121412655066231, guid: 675b3e2b9b5ea8b43967b3538e911f69,
         type: 3}
@@ -1062,7 +1072,7 @@ PrefabInstance:
     - target: {fileID: 3269236572267475079, guid: 3f41885a0618fce43a63c854d20680f8,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -275.75
+      value: -407.2
       objectReference: {fileID: 0}
     - target: {fileID: 3269236572267475079, guid: 3f41885a0618fce43a63c854d20680f8,
         type: 3}
@@ -1072,7 +1082,7 @@ PrefabInstance:
     - target: {fileID: 3269236572267475079, guid: 3f41885a0618fce43a63c854d20680f8,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 497.7
+      value: 234.8
       objectReference: {fileID: 0}
     - target: {fileID: 3269236572267475079, guid: 3f41885a0618fce43a63c854d20680f8,
         type: 3}

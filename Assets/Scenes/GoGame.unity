@@ -613,6 +613,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: ExitButton
       objectReference: {fileID: 0}
+    - target: {fileID: 4828793545114515527, guid: 35c97d4949eef7943964357510785295,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2026118351}
+    - target: {fileID: 4828793545114515527, guid: 35c97d4949eef7943964357510785295,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: QuitGame
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 35c97d4949eef7943964357510785295, type: 3}
 --- !u!224 &1509137129 stripped
@@ -690,6 +700,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0a54a79bea2bb9c4b9b61967a4aef9e0, type: 3}
+--- !u!114 &2026118351 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8673393346926573453, guid: 0a54a79bea2bb9c4b9b61967a4aef9e0,
+    type: 3}
+  m_PrefabInstance: {fileID: 2026118350}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aca647f05c27ff64e87b77e497b6b9dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2063077111
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -807,6 +829,21 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 5264403912561281822, guid: 170ead1615efd654b94c9173fe7a6f19,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2026118351}
+    - target: {fileID: 5264403912561281822, guid: 170ead1615efd654b94c9173fe7a6f19,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: LoadDesiredScene
+      objectReference: {fileID: 0}
+    - target: {fileID: 5264403912561281822, guid: 170ead1615efd654b94c9173fe7a6f19,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: GoMenu
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 170ead1615efd654b94c9173fe7a6f19, type: 3}
 --- !u!224 &2063077112 stripped
@@ -822,6 +859,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1300205432}
     m_Modifications:
+    - target: {fileID: 5187444141415984538, guid: 4a76d8b3929553846a27d62cedcb1bf0,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2026118351}
+    - target: {fileID: 5187444141415984538, guid: 4a76d8b3929553846a27d62cedcb1bf0,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: LoadDesiredScene
+      objectReference: {fileID: 0}
     - target: {fileID: 5187444141415984540, guid: 4a76d8b3929553846a27d62cedcb1bf0,
         type: 3}
       propertyPath: m_Name
