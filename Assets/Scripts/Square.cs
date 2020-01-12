@@ -8,13 +8,13 @@ public class Square : MonoBehaviour
     private string squarePositionCode;
     private string squareColorTag;
     private Color32 squareColor;
-    private string containedFigure;
     private SpriteRenderer spriteRenderer;
+    private ChessPiece containedPiece;
 
     public void Setup(int row, int column)
     {
         SetPositionOnBoard(row, column);
-        SetContainedFigure("");
+        SetContainedPiece(null);
         SetColor();
     }
 
@@ -40,20 +40,30 @@ public class Square : MonoBehaviour
         {
             squareColorTag = "Dark";
             gameObject.tag = squareColorTag;
-            squareColor = new Color32(0x70, 0x6F, 0x6F, 0xFF);
+            squareColor = new Color32(0x52, 0x51, 0x51, 0xFF);
         }
         else
         {
             squareColorTag = "Light";
             gameObject.tag = squareColorTag;
-            squareColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
+            squareColor = new Color32(0xC6, 0xC6, 0xC6, 0xFF);
         }
 
         spriteRenderer.color = squareColor;
     }
 
-    private void SetContainedFigure(string figureName)
+    public void SetContainedPiece(ChessPiece piece)
     {
-        containedFigure = figureName;
+        containedPiece = piece;
+    }
+
+    public Vector2Int GetSquarePosition()
+    {
+        return squarePosition;
+    }
+
+    public string GetSquarePositionCode()
+    {
+        return squarePositionCode;
     }
 }

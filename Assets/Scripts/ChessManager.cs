@@ -4,12 +4,30 @@ using UnityEngine;
 
 public class ChessManager : MonoBehaviour
 {
-    [SerializeField] public ChessBoard board;
+    [SerializeField] public GameObject chessSetPrefab;
+
+    ChessBoard chessBoard;
+    public ChessSet[] chessSets = new ChessSet[2];
 
     // Start is called before the first frame update
     void Start()
     {
-        board.GenerateBoard();
+        chessBoard = FindObjectOfType<ChessBoard>();
+        chessBoard.CreateNewBoard();
+
+        CreateChessSets();
+    }
+
+    private void CreateChessSets()
+    {
+        string[] playerColorTag = new string[2] { "Dark", "Light" };
+
+        for(int i = 0; i < 2; i++)
+        {
+            GameObject newSet = Instantiate(chessSetPrefab, gameObject.transform);
+            chessSets[i] = newSet.GetComponent<ChessSet>();
+            chessSets[i].CreatePieceSet(chessBoard, playerColorTag[i]);
+        }
     }
 
     // Update is called once per frame

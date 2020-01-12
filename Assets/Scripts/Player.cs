@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    private string playerColorTag;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -14,5 +17,10 @@ public class Player : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void InitializePlayer(string chosenTag)
+    {
+        playerColorTag = chosenTag;
     }
 }

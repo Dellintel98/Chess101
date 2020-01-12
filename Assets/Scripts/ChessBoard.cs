@@ -9,32 +9,31 @@ public class ChessBoard : MonoBehaviour
 
     public Square[,] board = new Square[8, 8];
 
-    // Start is called before the first frame update
-    private void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     private void Update()
     {
         
     }
 
-    public void GenerateBoard()
+    public void CreateNewBoard()
     {
         for (int row = 7; row >= 0; row--)
         {
-            for(int column = 0; column < 8; column++)
+            for (int column = 0; column < 8; column++)
             {
                 float x = (column * 2) - 7;
                 float y = 7 - (row * 2);
-                GameObject square = Instantiate(squarePrefab, new Vector3(x, y, 0f), Quaternion.identity, gameObject.transform);
-                board[row, column] = square.GetComponent<Square>();
-                
-                board[row, column].Setup(row, column);
+
+                GenerateBoardSquare(row, column, x, y);
             }
         }
-    }    
+    }
 
+    private void GenerateBoardSquare(int row, int column, float x, float y)
+    {
+        GameObject square = Instantiate(squarePrefab, new Vector3(x, y, 0f), Quaternion.identity, gameObject.transform);
+        board[row, column] = square.GetComponent<Square>();
+
+        board[row, column].Setup(row, column);
+    }
 }

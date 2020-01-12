@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &7082991097929196246
+--- !u!1 &2095811686893387237
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1923903403363962520}
-  - component: {fileID: 2759328132479186107}
+  - component: {fileID: 2086645894049148599}
+  - component: {fileID: -4390501885394831699}
   m_Layer: 0
-  m_Name: ChessBoard
+  m_Name: ChessSet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1923903403363962520
+--- !u!4 &2086645894049148599
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7082991097929196246}
+  m_GameObject: {fileID: 2095811686893387237}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -31,19 +31,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2759328132479186107
+--- !u!114 &-4390501885394831699
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7082991097929196246}
+  m_GameObject: {fileID: 2095811686893387237}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 743320421f24d374f9f76ee2cda2a73a, type: 3}
+  m_Script: {fileID: 11500000, guid: ae9474875aed742469a7dd3e60e8c7bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  squarePrefab: {fileID: 7632854060381593216, guid: c9a40ebb4ce049e458b15198b80a1e31,
-    type: 3}
   piecePrefab: {fileID: 7655873972721903089, guid: 50b93917a0412b242b027a9cfaae0c06,
     type: 3}
