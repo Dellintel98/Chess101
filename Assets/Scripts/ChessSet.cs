@@ -7,7 +7,7 @@ public class ChessSet : MonoBehaviour
     [SerializeField] public GameObject piecePrefab;
 
     private string chessSetColorTag;
-    private ChessPiece[,] pieceSet = new ChessPiece[2, 8];
+    private ChessPiece[,] pieceSet = new ChessPiece[2, 8]; // [0,] => Royalty row, [1,] => Pawn row
 
     public void CreatePieceSet(ChessBoard chessBoard, string playerColorTag)
     {        
@@ -42,8 +42,13 @@ public class ChessSet : MonoBehaviour
     private void SetPiece(Square currentSquare, int setRow, int setColumn, string playerColorTag)
     {
         Vector3 vector3 = currentSquare.transform.position;
-        GameObject piece = Instantiate(piecePrefab, new Vector3(vector3.x, vector3.y, -5f), Quaternion.identity, gameObject.transform);
+        GameObject piece = Instantiate(piecePrefab, new Vector3(vector3.x, vector3.y, 0f), Quaternion.identity, gameObject.transform);
         pieceSet[setRow, setColumn] = piece.GetComponent<ChessPiece>();
         pieceSet[setRow, setColumn].InitializePiece(currentSquare, playerColorTag);
+    }
+
+    public string GetColorTag()
+    {
+        return chessSetColorTag;
     }
 }

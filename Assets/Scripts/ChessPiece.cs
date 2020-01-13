@@ -1,17 +1,20 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ChessPiece : MonoBehaviour
 {
     [SerializeField] public Sprite[] pieceSprites;
+    [SerializeField] public GameObject shadowPrefab;
 
-    private string pieceTag;
     private Color32 pieceColor;
     //private string pieceState;
     private Square initialSquare;
     private Square currentSquare;
-    private SpriteRenderer spriteRenderer;
+    private bool iMoved;
+    private GameObject myShadow;
+    private bool visibleShadow;
 
     // Update is called once per frame
     void Update()
@@ -24,6 +27,8 @@ public class ChessPiece : MonoBehaviour
         int spriteIndex;
 
         //pieceState = "alive";
+        iMoved = false;
+
         initialSquare = boardPosition;
         currentSquare = boardPosition;
 
@@ -33,12 +38,38 @@ public class ChessPiece : MonoBehaviour
         SetPieceSprite(spriteIndex);
 
         SetPieceColor(playerColorTag);
+
+        SetPieceSortingLayer();
+
+        CreatePieceShadow();
+    }
+
+    private void CreatePieceShadow()
+    {
+        myShadow = Instantiate(shadowPrefab, new Vector3(transform.position.x, transform.position.y - (float)1.5, 0f), Quaternion.identity, transform) as GameObject;
+        myShadow.GetComponent<SpriteRenderer>().sortingLayerName = "PiecesLayer";
+        visibleShadow = false;
+        myShadow.SetActive(visibleShadow);
+    }
+
+    public void SetShadowVisibility()
+    {
+        visibleShadow = !visibleShadow;
+        myShadow.SetActive(visibleShadow);
+
+        if (!visibleShadow)
+        {
+            transform.position = new Vector3(transform.position.x, myShadow.transform.position.y + (float)0.5, transform.position.z);
+        }
+    }
+
+    private void SetPieceSortingLayer()
+    {
+        GetComponent<SpriteRenderer>().sortingLayerName = "PiecesLayer";
     }
 
     private void SetPieceColor(string playerColorTag)
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-
         if (playerColorTag == "Dark")
         {
             pieceColor = new Color32(0x00, 0x00, 0x00, 0xFF);
@@ -48,7 +79,7 @@ public class ChessPiece : MonoBehaviour
             pieceColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
         }
 
-        spriteRenderer.color = pieceColor;
+        GetComponent<SpriteRenderer>().color = pieceColor;
     }
 
     private int SetPieceTag()
@@ -56,6 +87,7 @@ public class ChessPiece : MonoBehaviour
         int x = initialSquare.GetSquarePosition().x;
         int y = initialSquare.GetSquarePosition().y;
         int spriteIndex;
+        string pieceTag;
 
         if (x == 7 || x == 0)
         {
@@ -101,10 +133,56 @@ public class ChessPiece : MonoBehaviour
         GetComponent<SpriteRenderer>().sprite = pieceSprites[spriteIndex];
     }
 
-    //private void OnMouseDown()
+    //private void OnMouseUp()
     //{
-    //    spriteRenderer = GetComponent<SpriteRenderer>();
-    //    pieceColor = new Color32(0x80, 0x00, 0x00, 0xFF);
-    //    spriteRenderer.color = pieceColor;
+    //    Vector3 position = gameObject.transform.position;
+    //    gameObject.transform.position = new Vector3(position.x, position.y, 0f);
+    //    SetMovementActivity();
     //}
+
+    public void MovePiece()
+    {
+        Vector2 boardPosition = GetBoardPosition();
+
+        gameObject.transform.position = new Vector3(boardPosition.x, boardPosition.y + 1, -5f);
+    }
+
+    private Vector2 GetBoardPosition()
+    {
+        Vector2 currentCursorPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+        Vector2 currentWorldPosition = Camera.main.ScreenToWorldPoint(currentCursorPosition);
+        Vector2 currentBoardPosition = SnapToBoardGrid(currentWorldPosition);
+
+        return currentBoardPosition;
+    }
+
+    public Square GetCurrentSquare()
+    {
+        return currentSquare;
+    }
+
+    public void SetCurrentSquare(Square newSquare)
+    {
+        currentSquare.SetContainedPiece(null);
+        currentSquare = newSquare;
+        currentSquare.SetContainedPiece(this);
+    }
+
+    private Vector2 SnapToBoardGrid(Vector2 rawWorldPosition)
+    {
+        float newX = Mathf.RoundToInt(rawWorldPosition.x);
+        float newY = Mathf.RoundToInt(rawWorldPosition.y);
+
+        return new Vector2(newX, newY);
+    }
+
+    public bool HaveIMoved()
+    {
+        return iMoved;
+    }
+
+    public void SetMovementActivity()
+    {
+        iMoved = !iMoved;
+    }
 }

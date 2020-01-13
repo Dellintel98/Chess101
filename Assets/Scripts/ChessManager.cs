@@ -7,7 +7,8 @@ public class ChessManager : MonoBehaviour
     [SerializeField] public GameObject chessSetPrefab;
 
     ChessBoard chessBoard;
-    public ChessSet[] chessSets = new ChessSet[2];
+    ChessGameplayManager game;
+    private ChessSet[] chessSets = new ChessSet[2];
 
     // Start is called before the first frame update
     void Start()
@@ -16,6 +17,9 @@ public class ChessManager : MonoBehaviour
         chessBoard.CreateNewBoard();
 
         CreateChessSets();
+
+        game = FindObjectOfType<ChessGameplayManager>();
+        game.InitializeGame(chessSets, chessBoard);
     }
 
     private void CreateChessSets()

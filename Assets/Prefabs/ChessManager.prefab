@@ -43,7 +43,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58572b98239bf73469454936bb99e0ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chessSetPrefab: {fileID: 2095811686893387237, guid: 4a2ff397261a53345b44c5a65198bbd7,
+  chessSetPrefab: {fileID: 6039202058021115793, guid: 4a2ff397261a53345b44c5a65198bbd7,
     type: 3}
   chessSets:
   - {fileID: 0}

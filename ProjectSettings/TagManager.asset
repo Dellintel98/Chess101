@@ -56,3 +56,6 @@ TagManager:
   - name: StartForeground
     uniqueID: 2411930571
     locked: 0
+  - name: PiecesLayer
+    uniqueID: 2460353947
+    locked: 0

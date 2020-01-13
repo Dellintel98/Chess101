@@ -57,6 +57,11 @@ public class Square : MonoBehaviour
         containedPiece = piece;
     }
 
+    public ChessPiece GetContainedPiece()
+    {
+        return containedPiece;
+    }
+
     public Vector2Int GetSquarePosition()
     {
         return squarePosition;
