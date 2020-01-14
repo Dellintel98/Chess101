@@ -4,16 +4,26 @@ using UnityEngine;
 
 public class Square : MonoBehaviour
 {
+    [SerializeField] public GameObject potentialMoveMarkPrefab;
+
     private Vector2Int squarePosition;
     private string squarePositionCode;
     private string squareColorTag;
     private Color32 squareColor;
+    private Color32 specialColor;
+    private bool visibleHighlight;
+    private bool visibleMoveMark;
+    private GameObject myMoveMark;
     private SpriteRenderer spriteRenderer;
     private ChessPiece containedPiece;
 
     public void Setup(int row, int column)
     {
+        visibleHighlight = false;
+        specialColor = new Color32(0x1F, 0x7A, 0x8C, 0xFF); //#022b3a  #bfdbf7
+
         SetPositionOnBoard(row, column);
+        CreatePotentialMoveMark();
         SetContainedPiece(null);
         SetColor();
     }
@@ -24,9 +34,30 @@ public class Square : MonoBehaviour
 
         char columnCode = (char)(column + 65);
         int rowCode = 8 - row;
-        squarePositionCode = $"{columnCode}{rowCode}";
+        squarePositionCode = $"{columnCode}{rowCode} {squarePosition}";
 
         gameObject.name = "Square" + squarePositionCode;
+    }
+
+    private void CreatePotentialMoveMark()
+    {
+        myMoveMark = Instantiate(potentialMoveMarkPrefab, new Vector3(transform.position.x, transform.position.y, -1f), Quaternion.identity, transform) as GameObject;
+        myMoveMark.GetComponent<SpriteRenderer>().sortingLayerName = "PiecesLayer";
+        myMoveMark.GetComponent<SpriteRenderer>().color = specialColor;
+        visibleMoveMark = false;
+        myMoveMark.SetActive(visibleMoveMark);
+    }
+
+    private void SetMoveMarkColor(Color32 newColor)
+    {
+        myMoveMark.GetComponent<SpriteRenderer>().color = newColor;
+    }
+
+    public void SetPotentialMoveMarkVisibility()
+    {
+        visibleMoveMark = !visibleMoveMark;
+
+        myMoveMark.SetActive(visibleMoveMark);
     }
 
     public void SetColor()
@@ -50,6 +81,25 @@ public class Square : MonoBehaviour
         }
 
         spriteRenderer.color = squareColor;
+    }
+
+    public void HighlightSquare()
+    {
+        visibleHighlight = !visibleHighlight;
+
+        if (visibleHighlight)
+        {
+            spriteRenderer.color = Color.Lerp(squareColor, specialColor, 0.5f);
+        }
+        else
+        {
+            spriteRenderer.color = squareColor;
+        }
+    }
+
+    public bool IsHighlighted()
+    {
+        return visibleHighlight;
     }
 
     public void SetContainedPiece(ChessPiece piece)

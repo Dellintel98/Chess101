@@ -7,10 +7,12 @@ public class ChessSet : MonoBehaviour
     [SerializeField] public GameObject piecePrefab;
 
     private string chessSetColorTag;
+    private ChessBoard myBoard;
     private ChessPiece[,] pieceSet = new ChessPiece[2, 8]; // [0,] => Royalty row, [1,] => Pawn row
 
     public void CreatePieceSet(ChessBoard chessBoard, string playerColorTag)
-    {        
+    {
+        myBoard = chessBoard;
         chessSetColorTag = playerColorTag;
 
         if(chessSetColorTag == "Dark")
@@ -20,10 +22,12 @@ public class ChessSet : MonoBehaviour
                 for(int column = 0; column < 8; column++)
                 {
                     Square currentSquare;
-                    currentSquare = chessBoard.board[row, column];
+                    currentSquare = myBoard.board[row, column];
                     SetPiece(currentSquare, row, column, playerColorTag);
                 }
             }
+
+            transform.name = "Dark Colored ChessSet";
         }
         else
         {
@@ -32,10 +36,11 @@ public class ChessSet : MonoBehaviour
                 for (int column = 0; column < 8; column++)
                 {
                     Square currentSquare;
-                    currentSquare = chessBoard.board[row, column];
+                    currentSquare = myBoard.board[row, column];
                     SetPiece(currentSquare, 7 - row, column, playerColorTag);
                 }
             }
+            transform.name = "Light Colored ChessSet";
         }
     }
 
@@ -44,7 +49,7 @@ public class ChessSet : MonoBehaviour
         Vector3 vector3 = currentSquare.transform.position;
         GameObject piece = Instantiate(piecePrefab, new Vector3(vector3.x, vector3.y, 0f), Quaternion.identity, gameObject.transform);
         pieceSet[setRow, setColumn] = piece.GetComponent<ChessPiece>();
-        pieceSet[setRow, setColumn].InitializePiece(currentSquare, playerColorTag);
+        pieceSet[setRow, setColumn].InitializePiece(currentSquare, playerColorTag, myBoard);
     }
 
     public string GetColorTag()

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,28 +26,20 @@ public class ChessGameplayManager : MonoBehaviour
         float currentX = currentPosition.x;
         float currentY = currentPosition.y;
 
-        Debug.Log($"Cursor over board pos: {currentPosition}");
-
         foreach (Square square in myBoard.board)
         {
             if (square.GetContainedPiece() && square.transform.position.x == currentX && square.transform.position.y == currentY)
             {
-                //square.GetContainedPiece().GetComponent<SpriteRenderer>().color = Color.blue;
+                if (!square.IsHighlighted())
+                {
+                    square.HighlightSquare();
+                }
                 activePiece = square.GetContainedPiece();
                 activePiece.SetShadowVisibility();
-                Debug.Log($"Square pos in IF: {square.transform.position}");
+                activePiece.ShowPotentialMoves();
                 break;
             }
         }
-    }
-
-    private Vector2 GetBoardPosition()
-    {
-        Vector2 currentCursorPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-        Vector2 currentWorldPosition = Camera.main.ScreenToWorldPoint(currentCursorPosition);
-        Vector2 currentBoardPosition = SnapToBoardGrid(currentWorldPosition);
-
-        return currentBoardPosition;
     }
 
     private void OnMouseDrag()
@@ -67,13 +60,30 @@ public class ChessGameplayManager : MonoBehaviour
         {
             if (activePiece && square.transform.position.x == currentX && square.transform.position.y == currentY)
             {
+                square.HighlightSquare();
+                activePiece.GetCurrentSquare().HighlightSquare();
+                activePiece.ShowPotentialMoves();
+
                 activePiece.SetCurrentSquare(square);
+                activePiece.RecomputePotentialMoves();
+                
                 activePiece.SetShadowVisibility();
+                activePiece.transform.position = new Vector3(activePiece.transform.position.x, activePiece.transform.position.y, 0f);
+                activePiece.SetMovementActivity();
                 break;
             }
         }
 
         activePiece = null;
+    }
+
+    private Vector2 GetBoardPosition()
+    {
+        Vector2 currentCursorPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+        Vector2 currentWorldPosition = Camera.main.ScreenToWorldPoint(currentCursorPosition);
+        Vector2 currentBoardPosition = SnapToBoardGrid(currentWorldPosition);
+
+        return currentBoardPosition;
     }
 
     private Vector2 SnapToBoardGrid(Vector2 rawWorldPosition)
@@ -84,6 +94,14 @@ public class ChessGameplayManager : MonoBehaviour
         return new Vector2(newX, newY);
     }
 
+    
+
+
+
+
+    //____________________________________________________________________
+    //--------------------------------------------------------------------
+    //--------------------------------------------------------------------
     private void GameLoop(ChessSet[] sets, ChessBoard chessBoard)
     {
         while (!isThereAWinner)

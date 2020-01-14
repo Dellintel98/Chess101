@@ -9,10 +9,14 @@ public class ChessPiece : MonoBehaviour
     [SerializeField] public GameObject shadowPrefab;
 
     private Color32 pieceColor;
+    private string myPlayerColorTag;
     //private string pieceState;
+    private ChessBoard myBoard;
     private Square initialSquare;
     private Square currentSquare;
+    private List<Square> potentialMoves = new List<Square>();
     private bool iMoved;
+    private int moveCounter;
     private GameObject myShadow;
     private bool visibleShadow;
 
@@ -22,23 +26,25 @@ public class ChessPiece : MonoBehaviour
         
     }
 
-    public void InitializePiece(Square boardPosition, string playerColorTag)
+    public void InitializePiece(Square boardPosition, string playerColorTag, ChessBoard chessBoard)
     {
         int spriteIndex;
 
+        myPlayerColorTag = playerColorTag;
         //pieceState = "alive";
         iMoved = false;
+        moveCounter = 0;
 
+        myBoard = chessBoard;
         initialSquare = boardPosition;
         currentSquare = boardPosition;
 
         boardPosition.SetContainedPiece(this);
+        ComputePotentialMoves();
 
         spriteIndex = SetPieceTag();
         SetPieceSprite(spriteIndex);
-
-        SetPieceColor(playerColorTag);
-
+        SetPieceColor();
         SetPieceSortingLayer();
 
         CreatePieceShadow();
@@ -46,7 +52,7 @@ public class ChessPiece : MonoBehaviour
 
     private void CreatePieceShadow()
     {
-        myShadow = Instantiate(shadowPrefab, new Vector3(transform.position.x, transform.position.y - (float)1.5, 0f), Quaternion.identity, transform) as GameObject;
+        myShadow = Instantiate(shadowPrefab, new Vector3(transform.position.x, transform.position.y - 1.5f, 0f), Quaternion.identity, transform) as GameObject;
         myShadow.GetComponent<SpriteRenderer>().sortingLayerName = "PiecesLayer";
         visibleShadow = false;
         myShadow.SetActive(visibleShadow);
@@ -55,12 +61,17 @@ public class ChessPiece : MonoBehaviour
     public void SetShadowVisibility()
     {
         visibleShadow = !visibleShadow;
-        myShadow.SetActive(visibleShadow);
 
         if (!visibleShadow)
         {
-            transform.position = new Vector3(transform.position.x, myShadow.transform.position.y + (float)0.5, transform.position.z);
+            transform.position = new Vector3(transform.position.x, myShadow.transform.position.y + 0.5f, transform.position.z);
         }
+        else
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y + 1f, -5f);
+        }
+
+        myShadow.SetActive(visibleShadow);
     }
 
     private void SetPieceSortingLayer()
@@ -68,9 +79,9 @@ public class ChessPiece : MonoBehaviour
         GetComponent<SpriteRenderer>().sortingLayerName = "PiecesLayer";
     }
 
-    private void SetPieceColor(string playerColorTag)
+    private void SetPieceColor()
     {
-        if (playerColorTag == "Dark")
+        if (myPlayerColorTag == "Dark")
         {
             pieceColor = new Color32(0x00, 0x00, 0x00, 0xFF);
         }
@@ -124,8 +135,16 @@ public class ChessPiece : MonoBehaviour
         }
 
         gameObject.tag = pieceTag;
-        
+        SetPieceName(y);
+
         return spriteIndex;
+    }
+
+    private void SetPieceName(int pieceIndex)
+    {
+        string index = $"{pieceIndex}";
+
+        transform.name = $"{myPlayerColorTag}{transform.tag} ({index})";
     }
 
     private void SetPieceSprite(int spriteIndex)
@@ -133,18 +152,16 @@ public class ChessPiece : MonoBehaviour
         GetComponent<SpriteRenderer>().sprite = pieceSprites[spriteIndex];
     }
 
-    //private void OnMouseUp()
-    //{
-    //    Vector3 position = gameObject.transform.position;
-    //    gameObject.transform.position = new Vector3(position.x, position.y, 0f);
-    //    SetMovementActivity();
-    //}
+    public string GetMyColorTag()
+    {
+        return myPlayerColorTag;
+    }
 
     public void MovePiece()
     {
         Vector2 boardPosition = GetBoardPosition();
 
-        gameObject.transform.position = new Vector3(boardPosition.x, boardPosition.y + 1, -5f);
+        gameObject.transform.position = new Vector3(boardPosition.x, boardPosition.y + 1f, -5f);
     }
 
     private Vector2 GetBoardPosition()
@@ -184,5 +201,145 @@ public class ChessPiece : MonoBehaviour
     public void SetMovementActivity()
     {
         iMoved = !iMoved;
+
+        if (iMoved)
+        {
+            moveCounter++;
+        }
     }
+
+    public int GetNumberOfMoves()
+    {
+        return moveCounter;
+    }
+
+    public void ShowPotentialMoves()
+    {
+        foreach(Square square in potentialMoves)
+        {
+            square.SetPotentialMoveMarkVisibility();
+        }
+    }
+
+    public void RecomputePotentialMoves()
+    {
+        ComputePotentialMoves();
+    }
+
+    private void ComputePotentialMoves()
+    {
+        potentialMoves.Clear();
+
+        switch (transform.tag)
+        {
+            case "Pawn":
+                PotentialPawnMoves();
+                break;
+            case "Rook":
+                PotentialRookMoves();
+                break;
+            case "Knight":
+                PotentialKnightMoves();
+                break;
+            case "Bishop":
+                PotentialBishopMoves();
+                break;
+            case "Queen":
+                PotentialQueenMoves();
+                break;
+            case "King":
+                PotentialKingMoves();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void PotentialKingMoves()
+    {
+        
+    }
+
+    private void PotentialQueenMoves()
+    {
+        
+    }
+
+    private void PotentialBishopMoves()
+    {
+        
+    }
+
+    private void PotentialKnightMoves()
+    {
+        
+    }
+
+    private void PotentialRookMoves()
+    {
+        
+    }
+
+    private void PotentialPawnMoves()
+    {
+        int myX = currentSquare.GetSquarePosition().x;
+        int myY = currentSquare.GetSquarePosition().y;
+        int signum;
+
+        if(transform.tag == "Dark")
+        {
+            signum = -1;
+        }
+        else
+        {
+            signum = 1;
+        }
+
+        foreach(Square square in myBoard.board)
+        {
+            ChessPiece piece = square.GetContainedPiece();
+            bool canIAdd = false;
+
+            if (piece)
+            {
+                if (piece.GetMyColorTag() != myPlayerColorTag)
+                {
+                    if (square.GetSquarePosition().x == myX + (signum * 1))
+                    {
+                        canIAdd = true;
+                    }
+                    else if (moveCounter == 0 && square.GetSquarePosition().x == myX + (signum * 2))
+                    {
+                        canIAdd = true;
+                    }
+                    else if (square.GetSquarePosition().x == myX + signum * 1 && (square.GetSquarePosition().y == myY + 1 || square.GetSquarePosition().y == myY - 1))
+                    {
+                        canIAdd = true;
+                    }
+                }
+            }
+            else
+            {
+                if (square.GetSquarePosition().x == myX + (signum * 1))
+                {
+                    canIAdd = true;
+                }
+                else if (moveCounter == 0 && square.GetSquarePosition().x == myX + (signum * 2))
+                {
+                    canIAdd = true;
+                }
+                else if (square.GetSquarePosition().x == myX + signum * 1 && (square.GetSquarePosition().y == myY + 1 || square.GetSquarePosition().y == myY - 1))
+                {
+                    canIAdd = true;
+                }
+            }
+
+            if (canIAdd)
+            {
+                potentialMoves.Add(square);
+            }
+        }
+    }
+
+
 }
