@@ -237,6 +237,7 @@ public class ChessPiece : MonoBehaviour
                 break;
             case "Rook":
                 PotentialRookMoves();
+                ShowPotentialMoves();
                 break;
             case "Knight":
                 PotentialKnightMoves();
@@ -277,7 +278,51 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialRookMoves()
     {
-        
+        List<List<Vector3>> calculationsList = new List<List<Vector3>>();
+
+        calculationsList.Add(CalculateRowOrColumnMoveCoordinates(7f, true, true));
+        calculationsList.Add(CalculateRowOrColumnMoveCoordinates(7f, true, false));
+        calculationsList.Add(CalculateRowOrColumnMoveCoordinates(7f, false, true));
+        calculationsList.Add(CalculateRowOrColumnMoveCoordinates(7f, false, false));
+
+        foreach (Square square in myBoard.board)
+        {
+            
+            foreach(Vector3 calculation in calculationsList[0])
+            {
+                if(square.transform.position == calculation)
+                {
+                    potentialMoves.Add(square);
+                }
+            }
+
+            
+            foreach (Vector3 calculation in calculationsList[1])
+            {
+                if (square.transform.position == calculation)
+                {
+                    potentialMoves.Add(square);
+                }
+            }
+
+
+            foreach (Vector3 calculation in calculationsList[2])
+            {
+                if (square.transform.position == calculation)
+                {
+                    potentialMoves.Add(square);
+                }
+            }
+
+            
+            foreach (Vector3 calculation in calculationsList[3])
+            {
+                if (square.transform.position == calculation)
+                {
+                    potentialMoves.Add(square);
+                }
+            }
+        }
     }
 
     private void PotentialPawnMoves()
@@ -341,5 +386,109 @@ public class ChessPiece : MonoBehaviour
         }
     }
 
+    //private float CalculateRowMoveCoordinate(float numberOfMoves, bool moveForward)
+    //{
+    //    float signum = 1f;
+    //    float row = transform.position.y;
+    //    float newRow;
+    //    float direction = 1f;
 
+    //    if(myPlayerColorTag == "Dark")
+    //    {
+    //        signum = -1f;
+    //    }
+
+    //    if (!moveForward)
+    //    {
+    //        direction = -1f;
+    //    }
+
+    //    newRow = row + signum * numberOfMoves * 2f * direction;
+        
+    //    if(newRow > -8 && newRow < 8)
+    //    {
+    //        return newRow;
+    //    }
+    //    else
+    //    {
+    //        return 0;
+    //    }
+    //}
+
+    private List<Vector3> CalculateRowOrColumnMoveCoordinates(float maxNumberOfMoves, bool moveForwardOrRight, bool isVerticalMove)
+    {
+        List<Vector3> calculations = new List<Vector3>();
+
+        float signum = 1f;
+        float coordinate;
+        float newCoordinate;
+        float direction = 1f;
+
+        if (isVerticalMove)
+        {
+            coordinate = transform.position.y;
+        }
+        else
+        {
+            coordinate = transform.position.x;
+        }
+
+        if (myPlayerColorTag == "Dark")
+        {
+            signum = -1f;
+        }
+
+        if (!moveForwardOrRight)
+        {
+            direction = -1f;
+        }
+
+        for(float i = 0; i < maxNumberOfMoves; i++)
+        {
+            newCoordinate = coordinate + signum * maxNumberOfMoves * 2f * direction;
+
+            if (newCoordinate > -8 && newCoordinate < 8)
+            {
+                if (isVerticalMove)
+                {
+                    calculations.Add(new Vector3(transform.position.x, newCoordinate, transform.position.z));
+                }
+                else
+                {
+                    calculations.Add(new Vector3(newCoordinate, transform.position.y, transform.position.z));
+                }
+            }
+        }
+
+        return calculations;
+    }
+
+    //private float CalculateColumnMoveCoordinate(float numberOfMoves, bool moveRight)
+    //{
+    //    float signum = 1f;
+    //    float column = transform.position.x;
+    //    float newColumn;
+    //    float direction = 1f;
+
+    //    if (myPlayerColorTag == "Dark")
+    //    {
+    //        signum = -1f;
+    //    }
+
+    //    if (!moveRight)
+    //    {
+    //        direction = -1f;
+    //    }
+
+    //    newColumn = column + signum * numberOfMoves * 2f * direction;
+
+    //    if (newColumn > -8 && newColumn < 8)
+    //    {
+    //        return newColumn;
+    //    }
+    //    else
+    //    {
+    //        return 0;
+    //    }
+    //}
 }
