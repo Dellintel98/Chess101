@@ -1179,7 +1179,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4021364941659913696, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
+    - {fileID: 4021364941580725840, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
+    - {fileID: 4021364942681819240, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
+    - {fileID: 4021364941326644998, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
+    - {fileID: 4021364942530978904, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
+    - {fileID: 4021364941316011586, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
+    - {fileID: 4021364942707990767, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
+    - {fileID: 4021364941495455266, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 5c3e1a607bc937d4b98500e7eeacb40a, type: 3}
 --- !u!1001 &5264403911505719944
 PrefabInstance:
@@ -1372,5 +1380,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: BoardLettersLabel
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7082953672564803994, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}
+    - {fileID: 7082953673635811059, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}
+    - {fileID: 7082953674319552572, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}
+    - {fileID: 7082953672622965654, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}
+    - {fileID: 7082953673054371262, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}
+    - {fileID: 7082953674252756031, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}
+    - {fileID: 7082953672527163451, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}
+    - {fileID: 7082953672354242712, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 68d7b05e379f95b42af5c79980f149df, type: 3}

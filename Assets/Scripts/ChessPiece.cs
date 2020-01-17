@@ -40,7 +40,6 @@ public class ChessPiece : MonoBehaviour
         currentSquare = boardPosition;
 
         boardPosition.SetContainedPiece(this);
-        ComputePotentialMoves();
 
         spriteIndex = SetPieceTag();
         SetPieceSprite(spriteIndex);
@@ -228,7 +227,10 @@ public class ChessPiece : MonoBehaviour
 
     private void ComputePotentialMoves()
     {
-        potentialMoves.Clear();
+        if (potentialMoves.Count > 0)
+        {
+            potentialMoves.Clear();
+        }
 
         switch (transform.tag)
         {
@@ -237,7 +239,6 @@ public class ChessPiece : MonoBehaviour
                 break;
             case "Rook":
                 PotentialRookMoves();
-                ShowPotentialMoves();
                 break;
             case "Knight":
                 PotentialKnightMoves();
@@ -263,7 +264,8 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialQueenMoves()
     {
-        
+        PotentialRookMoves();
+        PotentialBishopMoves();
     }
 
     private void PotentialBishopMoves()
@@ -278,46 +280,18 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialRookMoves()
     {
-        List<List<Vector3>> calculationsList = new List<List<Vector3>>();
-
-        calculationsList.Add(CalculateRowOrColumnMoveCoordinates(7f, true, true));
-        calculationsList.Add(CalculateRowOrColumnMoveCoordinates(7f, true, false));
-        calculationsList.Add(CalculateRowOrColumnMoveCoordinates(7f, false, true));
-        calculationsList.Add(CalculateRowOrColumnMoveCoordinates(7f, false, false));
+        List<Vector3> calculations = CalculateRowOrColumnMoveCoordinates(7f, true, true);
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(7f, false, true));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(7f, true, false));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(7f, false, false));
 
         foreach (Square square in myBoard.board)
         {
-            
-            foreach(Vector3 calculation in calculationsList[0])
-            {
-                if(square.transform.position == calculation)
-                {
-                    potentialMoves.Add(square);
-                }
-            }
+            ChessPiece piece = square.GetContainedPiece();
 
-            
-            foreach (Vector3 calculation in calculationsList[1])
+            if (!piece || (piece && piece.GetMyColorTag() != myPlayerColorTag))
             {
-                if (square.transform.position == calculation)
-                {
-                    potentialMoves.Add(square);
-                }
-            }
-
-
-            foreach (Vector3 calculation in calculationsList[2])
-            {
-                if (square.transform.position == calculation)
-                {
-                    potentialMoves.Add(square);
-                }
-            }
-
-            
-            foreach (Vector3 calculation in calculationsList[3])
-            {
-                if (square.transform.position == calculation)
+                if (calculations.Contains(square.transform.position))
                 {
                     potentialMoves.Add(square);
                 }
@@ -327,93 +301,39 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialPawnMoves()
     {
-        int myX = currentSquare.GetSquarePosition().x;
-        int myY = currentSquare.GetSquarePosition().y;
-        int signum;
+        float numberOfPotentialForwardMoves = 2f;
 
-        if(transform.tag == "Dark")
+        //  Ovaj brojač treba prebaciti na višu razinu, u ChessGameplayManager,
+        //  jer broj poteza ovisi o igri i pojedinim setovima figura, a ne o samim figurama
+        if(moveCounter > 0)
         {
-            signum = -1;
-        }
-        else
-        {
-            signum = 1;
+            numberOfPotentialForwardMoves = 1f;
         }
 
-        foreach(Square square in myBoard.board)
+        List<Vector3> calculations = CalculateRowOrColumnMoveCoordinates(numberOfPotentialForwardMoves, true, true);
+        //Dodaj izračun za dijagonalno kretanje
+
+        foreach (Square square in myBoard.board)
         {
             ChessPiece piece = square.GetContainedPiece();
-            bool canIAdd = false;
 
-            if (piece)
+            if (!piece || (piece && piece.GetMyColorTag() != myPlayerColorTag))
             {
-                if (piece.GetMyColorTag() != myPlayerColorTag)
+                if (calculations.Contains(square.transform.position))
                 {
-                    if (square.GetSquarePosition().x == myX + (signum * 1))
-                    {
-                        canIAdd = true;
-                    }
-                    else if (moveCounter == 0 && square.GetSquarePosition().x == myX + (signum * 2))
-                    {
-                        canIAdd = true;
-                    }
-                    else if (square.GetSquarePosition().x == myX + signum * 1 && (square.GetSquarePosition().y == myY + 1 || square.GetSquarePosition().y == myY - 1))
-                    {
-                        canIAdd = true;
-                    }
-                }
-            }
-            else
-            {
-                if (square.GetSquarePosition().x == myX + (signum * 1))
-                {
-                    canIAdd = true;
-                }
-                else if (moveCounter == 0 && square.GetSquarePosition().x == myX + (signum * 2))
-                {
-                    canIAdd = true;
-                }
-                else if (square.GetSquarePosition().x == myX + signum * 1 && (square.GetSquarePosition().y == myY + 1 || square.GetSquarePosition().y == myY - 1))
-                {
-                    canIAdd = true;
+                    potentialMoves.Add(square);
                 }
             }
 
-            if (canIAdd)
-            {
-                potentialMoves.Add(square);
-            }
+            // !!!!!  Dodaj način izbacivanja polja iz liste mogućih poteza, 
+            // !!!!!  ako se između figure koja se pomiče i gledanog polja nalazi figura iste boje
+
+            //if (piece && piece.GetMyColorTag() == myPlayerColorTag)
+            //{
+            //    break;
+            //}
         }
     }
-
-    //private float CalculateRowMoveCoordinate(float numberOfMoves, bool moveForward)
-    //{
-    //    float signum = 1f;
-    //    float row = transform.position.y;
-    //    float newRow;
-    //    float direction = 1f;
-
-    //    if(myPlayerColorTag == "Dark")
-    //    {
-    //        signum = -1f;
-    //    }
-
-    //    if (!moveForward)
-    //    {
-    //        direction = -1f;
-    //    }
-
-    //    newRow = row + signum * numberOfMoves * 2f * direction;
-        
-    //    if(newRow > -8 && newRow < 8)
-    //    {
-    //        return newRow;
-    //    }
-    //    else
-    //    {
-    //        return 0;
-    //    }
-    //}
 
     private List<Vector3> CalculateRowOrColumnMoveCoordinates(float maxNumberOfMoves, bool moveForwardOrRight, bool isVerticalMove)
     {
@@ -426,7 +346,7 @@ public class ChessPiece : MonoBehaviour
 
         if (isVerticalMove)
         {
-            coordinate = transform.position.y;
+            coordinate = transform.position.y - 1;
         }
         else
         {
@@ -443,52 +363,23 @@ public class ChessPiece : MonoBehaviour
             direction = -1f;
         }
 
-        for(float i = 0; i < maxNumberOfMoves; i++)
+        for(float numberOfMoves = 1; numberOfMoves <= maxNumberOfMoves; numberOfMoves++)
         {
-            newCoordinate = coordinate + signum * maxNumberOfMoves * 2f * direction;
+            newCoordinate = coordinate + signum * numberOfMoves * 2f * direction;
 
             if (newCoordinate > -8 && newCoordinate < 8)
             {
                 if (isVerticalMove)
                 {
-                    calculations.Add(new Vector3(transform.position.x, newCoordinate, transform.position.z));
+                    calculations.Add(new Vector3(transform.position.x, newCoordinate, 0f));
                 }
                 else
                 {
-                    calculations.Add(new Vector3(newCoordinate, transform.position.y, transform.position.z));
+                    calculations.Add(new Vector3(newCoordinate, transform.position.y - 1, 0f));
                 }
             }
         }
 
         return calculations;
     }
-
-    //private float CalculateColumnMoveCoordinate(float numberOfMoves, bool moveRight)
-    //{
-    //    float signum = 1f;
-    //    float column = transform.position.x;
-    //    float newColumn;
-    //    float direction = 1f;
-
-    //    if (myPlayerColorTag == "Dark")
-    //    {
-    //        signum = -1f;
-    //    }
-
-    //    if (!moveRight)
-    //    {
-    //        direction = -1f;
-    //    }
-
-    //    newColumn = column + signum * numberOfMoves * 2f * direction;
-
-    //    if (newColumn > -8 && newColumn < 8)
-    //    {
-    //        return newColumn;
-    //    }
-    //    else
-    //    {
-    //        return 0;
-    //    }
-    //}
 }

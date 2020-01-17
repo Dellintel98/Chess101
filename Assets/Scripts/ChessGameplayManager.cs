@@ -36,6 +36,7 @@ public class ChessGameplayManager : MonoBehaviour
                 }
                 activePiece = square.GetContainedPiece();
                 activePiece.SetShadowVisibility();
+                activePiece.RecomputePotentialMoves();
                 activePiece.ShowPotentialMoves();
                 break;
             }
@@ -63,9 +64,7 @@ public class ChessGameplayManager : MonoBehaviour
                 square.HighlightSquare();
                 activePiece.GetCurrentSquare().HighlightSquare();
                 activePiece.ShowPotentialMoves();
-
                 activePiece.SetCurrentSquare(square);
-                activePiece.RecomputePotentialMoves();
                 
                 activePiece.SetShadowVisibility();
                 activePiece.transform.position = new Vector3(activePiece.transform.position.x, activePiece.transform.position.y, 0f);
