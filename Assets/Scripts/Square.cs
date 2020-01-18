@@ -2,6 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum MovementDirection
+{
+    None,
+    ForwardF,
+    BackwardB,
+    LeftL,
+    RightR,
+    DiagonalFL,
+    DiagonalFR,
+    DiagonalBL,
+    DiagonalBR
+}
+
 public class Square : MonoBehaviour
 {
     [SerializeField] public GameObject potentialMoveMarkPrefab;
@@ -120,5 +133,253 @@ public class Square : MonoBehaviour
     public string GetSquarePositionCode()
     {
         return squarePositionCode;
+    }
+
+
+    //Vidit zašto ne radi i bloka igra nakon dodavanja funkcije ispod
+    public bool CanYouGetToMe(ChessPiece activePiece, ChessBoard myBoard)
+    {
+        int pieceRow = activePiece.GetCurrentSquare().GetSquarePosition().x;
+        int pieceColumn = activePiece.GetCurrentSquare().GetSquarePosition().y;
+        int myRow = squarePosition.x;
+        int myColumn = squarePosition.y;
+        string pieceColor = activePiece.GetMyColorTag();
+
+        MovementDirection direction;
+
+        if (pieceRow == myRow && pieceColumn != myColumn)
+        {
+            //if(Mathf.Abs(pieceColumn - myColumn) > maxNumberOfMoves)
+            //{
+            //    return false;
+            //}
+
+            if(pieceColumn > myColumn)
+            {
+                direction = (pieceColor == "Light") ? MovementDirection.LeftL : MovementDirection.RightR;
+            }
+            else
+            {
+                direction = (pieceColor == "Light") ? MovementDirection.RightR : MovementDirection.LeftL;
+            }
+        }
+        else if (pieceRow != myRow && pieceColumn == myColumn)
+        {
+            if (pieceRow > myRow)
+            {
+                direction = (pieceColor == "Light") ? MovementDirection.BackwardB : MovementDirection.ForwardF;
+            }
+            else
+            {
+                direction = (pieceColor == "Light") ? MovementDirection.ForwardF : MovementDirection.BackwardB;
+            }
+        }
+        else if (pieceRow != myRow && pieceColumn != myColumn)
+        {
+            if (pieceRow > myRow && pieceColumn > myColumn)
+            {
+                direction = (pieceColor == "Light") ? MovementDirection.DiagonalBL : MovementDirection.DiagonalFR;
+            }
+            else if (pieceRow > myRow && pieceColumn < myColumn)
+            {
+                direction = (pieceColor == "Light") ? MovementDirection.DiagonalBR : MovementDirection.DiagonalFL;
+            }
+            else if (pieceRow < myRow && pieceColumn > myColumn)
+            {
+                direction = (pieceColor == "Light") ? MovementDirection.DiagonalFL : MovementDirection.DiagonalBR;
+            }
+            else
+            {
+                direction = (pieceColor == "Light") ? MovementDirection.DiagonalFR : MovementDirection.DiagonalBL;
+            }
+        }
+        else
+        {
+            direction = MovementDirection.None;
+        }
+
+        switch (direction)
+        {
+            case MovementDirection.ForwardF:
+                for (int i = pieceRow; (pieceColor == "Light") ? i >= myRow : i <= myRow; i = (pieceColor == "Light") ? i-- : i++)
+                {
+                    if(i == pieceRow)
+                    {
+                        continue;
+                    }
+
+                    Square square = myBoard.board[i, pieceColumn];
+                    ChessPiece piece = square.GetContainedPiece();
+
+                    if (piece && i != myRow)
+                    {
+                        return false;
+                    }
+                    else if(piece && i == myRow && piece.GetMyColorTag() == pieceColor)
+                    {
+                        return false;
+                    }
+                }
+                break;
+            case MovementDirection.BackwardB:
+                for (int i = pieceRow; (pieceColor == "Light") ? i <= myRow : i >= myRow; i = (pieceColor == "Light") ? i++ : i--)
+                {
+                    if (i == pieceRow)
+                    {
+                        continue;
+                    }
+
+                    Square square = myBoard.board[i, pieceColumn];
+                    ChessPiece piece = square.GetContainedPiece();
+
+                    if (piece && i != myRow)
+                    {
+                        return false;
+                    }
+                    else if (piece && i == myRow && piece.GetMyColorTag() == pieceColor)
+                    {
+                        return false;
+                    }
+                }
+                break;
+            case MovementDirection.RightR:
+                for (int i = pieceColumn; (pieceColor == "Light") ? i <= myColumn : i >= myColumn; i = (pieceColor == "Light") ? i++ : i--)
+                {
+                    if (i == pieceColumn)
+                    {
+                        continue;
+                    }
+
+                    Square square = myBoard.board[pieceRow, i];
+                    ChessPiece piece = square.GetContainedPiece();
+
+                    if (piece && i != myColumn)
+                    {
+                        return false;
+                    }
+                    else if (piece && i == myColumn && piece.GetMyColorTag() == pieceColor)
+                    {
+                        return false;
+                    }
+                }
+                break;
+            case MovementDirection.LeftL:
+                for (int i = pieceColumn; (pieceColor == "Light") ? i >= myColumn : i <= myColumn; i = (pieceColor == "Light") ? i-- : i++)
+                {
+                    if (i == pieceColumn)
+                    {
+                        continue;
+                    }
+
+                    Square square = myBoard.board[pieceRow, i];
+                    ChessPiece piece = square.GetContainedPiece();
+
+                    if (piece && i != myColumn)
+                    {
+                        return false;
+                    }
+                    else if (piece && i == myColumn && piece.GetMyColorTag() == pieceColor)
+                    {
+                        return false;
+                    }
+                }
+                break;
+            case MovementDirection.DiagonalFR:
+                for (int i = pieceRow; (pieceColor == "Light") ? i >= myRow : i <= myRow; i = (pieceColor == "Light") ? i-- : i++)
+                {
+                    if(i == pieceRow)
+                    {
+                        continue;
+                    }
+
+                    int numberOfMoves = (pieceColor == "Light") ? pieceRow - i : i - pieceRow;
+
+                    Square square = myBoard.board[i, pieceColumn + numberOfMoves];
+                    ChessPiece piece = square.GetContainedPiece();
+
+                    if (piece && i != myRow)
+                    {
+                        return false;
+                    }
+                    else if (piece && i == myRow && piece.GetMyColorTag() == pieceColor)
+                    {
+                        return false;
+                    }
+                }
+                break;
+            case MovementDirection.DiagonalFL:
+                for (int i = pieceRow; (pieceColor == "Light") ? i >= myRow : i <= myRow; i = (pieceColor == "Light") ? i-- : i++)
+                {
+                    if (i == pieceRow)
+                    {
+                        continue;
+                    }
+
+                    int numberOfMoves = (pieceColor == "Light") ? pieceRow - i : i - pieceRow;
+
+                    Square square = myBoard.board[i, pieceColumn - numberOfMoves];
+                    ChessPiece piece = square.GetContainedPiece();
+
+                    if (piece && i != myRow)
+                    {
+                        return false;
+                    }
+                    else if (piece && i == myRow && piece.GetMyColorTag() == pieceColor)
+                    {
+                        return false;
+                    }
+                }
+                break;
+            case MovementDirection.DiagonalBR:
+                for (int i = pieceRow; (pieceColor == "Light") ? i <= myRow : i >= myRow; i = (pieceColor == "Light") ? i++ : i--)
+                {
+                    if (i == pieceRow)
+                    {
+                        continue;
+                    }
+
+                    int numberOfMoves = (pieceColor == "Light") ? i - pieceRow : pieceRow - i;
+
+                    Square square = myBoard.board[i, pieceColumn + numberOfMoves];
+                    ChessPiece piece = square.GetContainedPiece();
+
+                    if (piece && i != myRow)
+                    {
+                        return false;
+                    }
+                    else if (piece && i == myRow && piece.GetMyColorTag() == pieceColor)
+                    {
+                        return false;
+                    }
+                }
+                break;
+            case MovementDirection.DiagonalBL:
+                for (int i = pieceRow; (pieceColor == "Light") ? i <= myRow : i >= myRow; i = (pieceColor == "Light") ? i++ : i--)
+                {
+                    if (i == pieceRow)
+                    {
+                        continue;
+                    }
+
+                    int numberOfMoves = (pieceColor == "Light") ? i - pieceRow : pieceRow - i;
+
+                    Square square = myBoard.board[i, pieceColumn - numberOfMoves];
+                    ChessPiece piece = square.GetContainedPiece();
+
+                    if (piece && i != myRow)
+                    {
+                        return false;
+                    }
+                    else if (piece && i == myRow && piece.GetMyColorTag() == pieceColor)
+                    {
+                        return false;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        return true;
     }
 }

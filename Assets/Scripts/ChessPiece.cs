@@ -177,6 +177,11 @@ public class ChessPiece : MonoBehaviour
         return currentSquare;
     }
 
+    public Square GetInitialSquare()
+    {
+        return initialSquare;
+    }
+
     public void SetCurrentSquare(Square newSquare)
     {
         currentSquare.SetContainedPiece(null);
@@ -199,12 +204,17 @@ public class ChessPiece : MonoBehaviour
 
     public void SetMovementActivity()
     {
-        iMoved = !iMoved;
+        ResetMovementActivity();
 
         if (iMoved)
         {
             moveCounter++;
         }
+    }
+
+    public void ResetMovementActivity()
+    {
+        iMoved = !iMoved;
     }
 
     public int GetNumberOfMoves()
@@ -293,7 +303,10 @@ public class ChessPiece : MonoBehaviour
             {
                 if (calculations.Contains(square.transform.position))
                 {
-                    potentialMoves.Add(square);
+                    if(square.CanYouGetToMe(this, myBoard))
+                    {
+                        potentialMoves.Add(square);
+                    }
                 }
             }
         }
@@ -303,8 +316,6 @@ public class ChessPiece : MonoBehaviour
     {
         float numberOfPotentialForwardMoves = 2f;
 
-        //  Ovaj brojač treba prebaciti na višu razinu, u ChessGameplayManager,
-        //  jer broj poteza ovisi o igri i pojedinim setovima figura, a ne o samim figurama
         if(moveCounter > 0)
         {
             numberOfPotentialForwardMoves = 1f;
@@ -317,21 +328,13 @@ public class ChessPiece : MonoBehaviour
         {
             ChessPiece piece = square.GetContainedPiece();
 
-            if (!piece || (piece && piece.GetMyColorTag() != myPlayerColorTag))
+            if (!piece)
             {
                 if (calculations.Contains(square.transform.position))
                 {
                     potentialMoves.Add(square);
                 }
             }
-
-            // !!!!!  Dodaj način izbacivanja polja iz liste mogućih poteza, 
-            // !!!!!  ako se između figure koja se pomiče i gledanog polja nalazi figura iste boje
-
-            //if (piece && piece.GetMyColorTag() == myPlayerColorTag)
-            //{
-            //    break;
-            //}
         }
     }
 
