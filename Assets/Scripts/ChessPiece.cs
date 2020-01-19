@@ -269,7 +269,27 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialKingMoves()
     {
-        
+        List<Vector3> calculations = CalculateDiagonalMoveCoordinates(1f, true, true);
+        calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, false, true));
+        calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, true, false));
+        calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, false, false));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, true, true));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, false, true));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, true, false));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, false, false));
+
+        foreach (Vector3 calculation in calculations)
+        {
+            Square square = myBoard.GetSquareByVector3(calculation);
+            ChessPiece piece = square.GetContainedPiece();
+
+            if (!piece || (piece && piece.GetMyColorTag() != myPlayerColorTag))
+            {
+                potentialMoves.Add(square);
+            }
+
+            //Dodati uvjete za rošadu veliku i malu
+        }
     }
 
     private void PotentialQueenMoves()
@@ -280,7 +300,21 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialBishopMoves()
     {
-        
+        List<Vector3> calculations = CalculateDiagonalMoveCoordinates(7f, true, true);
+        calculations.AddRange(CalculateDiagonalMoveCoordinates(7f, false, true));
+        calculations.AddRange(CalculateDiagonalMoveCoordinates(7f, true, false));
+        calculations.AddRange(CalculateDiagonalMoveCoordinates(7f, false, false));
+
+        foreach (Vector3 calculation in calculations)
+        {
+            Square square = myBoard.GetSquareByVector3(calculation);
+            ChessPiece piece = square.GetContainedPiece();
+
+            if (!piece || (piece && piece.GetMyColorTag() != myPlayerColorTag))
+            {
+                potentialMoves.Add(square);
+            }
+        }
     }
 
     private void PotentialKnightMoves()
@@ -295,19 +329,14 @@ public class ChessPiece : MonoBehaviour
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(7f, true, false));
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(7f, false, false));
 
-        foreach (Square square in myBoard.board)
+        foreach (Vector3 calculation in calculations)
         {
+            Square square = myBoard.GetSquareByVector3(calculation);
             ChessPiece piece = square.GetContainedPiece();
 
             if (!piece || (piece && piece.GetMyColorTag() != myPlayerColorTag))
             {
-                if (calculations.Contains(square.transform.position))
-                {
-                    if(square.CanYouGetToMe(this, myBoard))
-                    {
-                        potentialMoves.Add(square);
-                    }
-                }
+                potentialMoves.Add(square);
             }
         }
     }
@@ -321,16 +350,40 @@ public class ChessPiece : MonoBehaviour
             numberOfPotentialForwardMoves = 1f;
         }
 
-        List<Vector3> calculations = CalculateRowOrColumnMoveCoordinates(numberOfPotentialForwardMoves, true, true);
-        //Dodaj izračun za dijagonalno kretanje
+        List<Vector3> calculations = new List<Vector3>();
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(numberOfPotentialForwardMoves, true, true));
+        calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, true, true));
+        calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, true, false));
 
-        foreach (Square square in myBoard.board)
+        foreach(Vector3 calculation in calculations)
         {
+            Square square = myBoard.GetSquareByVector3(calculation);
             ChessPiece piece = square.GetContainedPiece();
 
-            if (!piece)
+            if (!piece && calculation.x == transform.position.x)
             {
-                if (calculations.Contains(square.transform.position))
+                potentialMoves.Add(square);
+            }
+            else if (piece && calculation.x != transform.position.x)
+            {
+                potentialMoves.Add(square);
+            }
+            else if (!piece && calculation.x != transform.position.x)
+            {
+                Square neighborSquare;
+
+                if(myPlayerColorTag == "Light")
+                {
+                    neighborSquare = myBoard.GetSquareByVector3(new Vector3(calculation.x, calculation.y - 2, calculation.z));
+                }
+                else
+                {
+                    neighborSquare = myBoard.GetSquareByVector3(new Vector3(calculation.x, calculation.y + 2, calculation.z));
+                }
+
+                ChessPiece neighborPiece = neighborSquare.GetContainedPiece();
+
+                if(neighborPiece && neighborPiece.GetMyColorTag() != myPlayerColorTag && neighborPiece.GetNumberOfMoves() == 1)
                 {
                     potentialMoves.Add(square);
                 }
@@ -372,16 +425,103 @@ public class ChessPiece : MonoBehaviour
 
             if (newCoordinate > -8 && newCoordinate < 8)
             {
+                Vector3 position;
+
                 if (isVerticalMove)
                 {
-                    calculations.Add(new Vector3(transform.position.x, newCoordinate, 0f));
+                    position = new Vector3(transform.position.x, newCoordinate, 0f);
                 }
                 else
                 {
-                    calculations.Add(new Vector3(newCoordinate, transform.position.y - 1, 0f));
+                    position = new Vector3(newCoordinate, transform.position.y - 1, 0f);
+                }
+
+                Square square = myBoard.GetSquareByVector3(position);
+                ChessPiece piece = square.GetContainedPiece();
+
+                if (square && !piece)
+                {
+                    calculations.Add(position);
+                }
+                else if(square && piece && piece.GetMyColorTag() != myPlayerColorTag)
+                {
+                    calculations.Add(position);
+                    break;
+                }
+                else if(square && piece && piece.GetMyColorTag() == myPlayerColorTag)
+                {
+                    break;
                 }
             }
         }
+
+        return calculations;
+    }
+
+    private List<Vector3> CalculateDiagonalMoveCoordinates(float maxNumberOfMoves, bool moveForward, bool moveRight)
+    {
+        List<Vector3> calculations = new List<Vector3>();
+
+        float signum = 1f;
+        float xCoordinate = transform.position.x;
+        float yCoordinate = transform.position.y - 1; ;
+        float newXCoordinate;
+        float newYCoordinate;
+        float verticalDirection = 1f;
+        float horizontalDirection = 1f;
+
+        if (myPlayerColorTag == "Dark")
+        {
+            signum = -1f;
+        }
+
+        if (!moveForward)
+        {
+            verticalDirection = -1f;
+        }
+
+        if (!moveRight)
+        {
+            horizontalDirection = -1f;
+        }
+
+        for (float numberOfMoves = 1; numberOfMoves <= maxNumberOfMoves; numberOfMoves++)
+        {
+            newXCoordinate = xCoordinate + signum * numberOfMoves * 2f * horizontalDirection;
+            newYCoordinate = yCoordinate + signum * numberOfMoves * 2f * verticalDirection;
+
+            if (newXCoordinate > -8 && newXCoordinate < 8 && newYCoordinate > -8 && newYCoordinate < 8)
+            {
+                Vector3 position = new Vector3(newXCoordinate, newYCoordinate, 0f);
+
+                Square square = myBoard.GetSquareByVector3(position);
+                ChessPiece piece = square.GetContainedPiece();
+
+                if (square && !piece)
+                {
+                    calculations.Add(position);
+                }
+                else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag)
+                {
+                    calculations.Add(position);
+                    break;
+                }
+                else if (square && piece && piece.GetMyColorTag() == myPlayerColorTag)
+                {
+                    break;
+                }
+            }
+        }
+
+        return calculations;
+    }
+
+    private List<Vector3> CalculateLShapedMoveCoordinates()
+    {
+        List<Vector3> calculations = new List<Vector3>();
+
+
+
 
         return calculations;
     }

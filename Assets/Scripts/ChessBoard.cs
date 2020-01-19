@@ -36,4 +36,17 @@ public class ChessBoard : MonoBehaviour
 
         board[row, column].Setup(row, column);
     }
+
+    public Square GetSquareByVector3(Vector3 position)
+    {
+        foreach(Square square in board)
+        {
+            if(square.transform.position == position)
+            {
+                return square;
+            }
+        }
+
+        return null;
+    }
 }
