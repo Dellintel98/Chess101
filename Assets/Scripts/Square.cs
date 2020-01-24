@@ -25,7 +25,7 @@ public class Square : MonoBehaviour
 
         SetPositionOnBoard(row, column);
         CreatePotentialMoveMark();
-        SetContainedPiece(null);
+        containedPiece = null;
         SetColor();
     }
 

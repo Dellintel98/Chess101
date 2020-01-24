@@ -37,11 +37,15 @@ public class ChessBoard : MonoBehaviour
         board[row, column].Setup(row, column);
     }
 
-    public Square GetSquareByVector3(Vector3 position)
+    public Square GetSquareByVector3(Vector3 rawPosition)
     {
-        foreach(Square square in board)
+        float roundedX = Mathf.Round(rawPosition.x);
+        float roundedY = Mathf.Round(rawPosition.y);
+        Vector3 roundedPosition = new Vector3(roundedX, roundedY, rawPosition.z);
+
+        foreach (Square square in board)
         {
-            if(square.transform.position == position)
+            if(square.transform.position == roundedPosition)
             {
                 return square;
             }

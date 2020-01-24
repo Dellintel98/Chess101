@@ -20,11 +20,6 @@ public class ChessPiece : MonoBehaviour
     private GameObject myShadow;
     private bool visibleShadow;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void InitializePiece(Square boardPosition, string playerColorTag, ChessBoard chessBoard)
     {
@@ -167,9 +162,9 @@ public class ChessPiece : MonoBehaviour
     {
         Vector2 currentCursorPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
         Vector2 currentWorldPosition = Camera.main.ScreenToWorldPoint(currentCursorPosition);
-        Vector2 currentBoardPosition = SnapToBoardGrid(currentWorldPosition);
+        //Vector2 currentBoardPosition = SnapToBoardGrid(currentWorldPosition);
 
-        return currentBoardPosition;
+        return currentWorldPosition;
     }
 
     public Square GetCurrentSquare()
@@ -186,15 +181,18 @@ public class ChessPiece : MonoBehaviour
     {
         currentSquare.SetContainedPiece(null);
         currentSquare = newSquare;
+
+        if(currentSquare.GetContainedPiece() && currentSquare.GetContainedPiece().GetMyColorTag() != myPlayerColorTag)
+        {
+            Destroy(currentSquare.GetContainedPiece().gameObject); // Odrediti pravila jedenja
+        }
+
         currentSquare.SetContainedPiece(this);
     }
 
-    private Vector2 SnapToBoardGrid(Vector2 rawWorldPosition)
+    public void SnapPositionToCurrentSquare()
     {
-        float newX = Mathf.RoundToInt(rawWorldPosition.x);
-        float newY = Mathf.RoundToInt(rawWorldPosition.y);
-
-        return new Vector2(newX, newY);
+        transform.position = currentSquare.transform.position;
     }
 
     public bool HaveIMoved()
@@ -228,6 +226,11 @@ public class ChessPiece : MonoBehaviour
         {
             square.SetPotentialMoveMarkVisibility();
         }
+    }
+
+    public List<Square> GetPotentialMoves()
+    {
+        return potentialMoves;
     }
 
     public void RecomputePotentialMoves()
@@ -269,26 +272,52 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialKingMoves()
     {
+        float myX = transform.position.x;
+        float myY = transform.position.y - 1;
+
+        ChessPiece myFirstRook = null;
+        ChessPiece mySecondRook = null;
+        ChessPiece myFartherHorse = null;
+
+        if(moveCounter == 0)
+        {
+            myFirstRook = myBoard.GetSquareByVector3(new Vector3(7f, myY, 0f)).GetContainedPiece();
+            mySecondRook = myBoard.GetSquareByVector3(new Vector3(-7f, myY, 0f)).GetContainedPiece();
+            myFartherHorse = myBoard.GetSquareByVector3(new Vector3(-5f, myY, 0f)).GetContainedPiece();
+        }
+
         List<Vector3> calculations = CalculateDiagonalMoveCoordinates(1f, true, true);
         calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, false, true));
         calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, true, false));
         calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, false, false));
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, true, true));
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, false, true));
-        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, true, false));
-        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, false, false));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(2f, true, false));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(2f, false, false));
 
         foreach (Vector3 calculation in calculations)
         {
             Square square = myBoard.GetSquareByVector3(calculation);
             ChessPiece piece = square.GetContainedPiece();
 
-            if (!piece || (piece && piece.GetMyColorTag() != myPlayerColorTag))
+            if(calculation.x == myX + 4)
+            {
+                if (myFirstRook && !piece && myFirstRook.GetNumberOfMoves() == 0)
+                {
+                    potentialMoves.Add(square);
+                }
+            }
+            else if(calculation.x == myX - 4)
+            {
+                if (mySecondRook && !myFartherHorse && !piece && mySecondRook.GetNumberOfMoves() == 0)
+                {
+                    potentialMoves.Add(square);
+                }
+            }
+            else if (!piece || (piece && piece.GetMyColorTag() != myPlayerColorTag))
             {
                 potentialMoves.Add(square);
             }
-
-            //Dodati uvjete za rošadu veliku i malu
         }
     }
 
@@ -319,7 +348,22 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialKnightMoves()
     {
-        
+        List<Vector3> calculations = CalculateLShapedMoveCoordinates();
+
+        foreach(Vector3 calculation in calculations)
+        {
+            Square square = myBoard.GetSquareByVector3(calculation);
+            ChessPiece piece = square.GetContainedPiece();
+
+            if (square && !piece)
+            {
+                potentialMoves.Add(square);
+            }
+            else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag)
+            {
+                potentialMoves.Add(square);
+            }
+        }
     }
 
     private void PotentialRookMoves()
@@ -464,7 +508,7 @@ public class ChessPiece : MonoBehaviour
 
         float signum = 1f;
         float xCoordinate = transform.position.x;
-        float yCoordinate = transform.position.y - 1; ;
+        float yCoordinate = transform.position.y - 1;
         float newXCoordinate;
         float newYCoordinate;
         float verticalDirection = 1f;
@@ -519,9 +563,27 @@ public class ChessPiece : MonoBehaviour
     private List<Vector3> CalculateLShapedMoveCoordinates()
     {
         List<Vector3> calculations = new List<Vector3>();
+        List<Vector3> potentialCalculations = new List<Vector3>();
 
+        float myX = transform.position.x;
+        float myY = transform.position.y - 1;
 
+        potentialCalculations.Add(new Vector3(myX + 2, myY + 4, 0f));
+        potentialCalculations.Add(new Vector3(myX + 4, myY + 2, 0f));
+        potentialCalculations.Add(new Vector3(myX + 4, myY - 2, 0f));
+        potentialCalculations.Add(new Vector3(myX + 2, myY - 4, 0f));
+        potentialCalculations.Add(new Vector3(myX - 2, myY - 4, 0f));
+        potentialCalculations.Add(new Vector3(myX - 4, myY - 2, 0f));
+        potentialCalculations.Add(new Vector3(myX - 4, myY + 2, 0f));
+        potentialCalculations.Add(new Vector3(myX - 2, myY + 4, 0f));
 
+        foreach(Vector3 calculation in potentialCalculations)
+        {
+            if(calculation.x > -8 && calculation.x < 8 && calculation.y > -8 && calculation.y < 8)
+            {
+                calculations.Add(calculation);
+            }
+        }
 
         return calculations;
     }
