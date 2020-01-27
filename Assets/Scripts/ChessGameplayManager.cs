@@ -62,77 +62,22 @@ public class ChessGameplayManager : MonoBehaviour
         bool moveCondition = false;
         float rawX = 0f;
         float rawY = 0f;
+        Vector2 currentPosition = GetBoardPosition();
+        float currentX = currentPosition.x;
+        float currentY = currentPosition.y;
 
         if (activePiece)
         {
             rawX = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y)).x;
             rawY = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y)).y;
         }
-
-        Vector2 currentPosition = GetBoardPosition();
-        float currentX = currentPosition.x;
-        float currentY = currentPosition.y;
-
-        if (activePiece && (rawY < -8 || rawY > 8 || rawX < -8 || rawX > 8))
-        {
-            activePiece.GetCurrentSquare().HighlightSquare();
-            activePiece.ShowPotentialMoves();
-            activePiece.SetShadowVisibility();
-            activePiece.SnapPositionToCurrentSquare();
-            activePiece = null;
-        }
-
-        if (activePiece && currentX % 2 == 0)
-        {
-            float firstNeighborSquareX = currentX - 1;
-            float secondNeighborSquareX = currentX + 1;
-            
-            if(Mathf.Abs(firstNeighborSquareX - rawX) <= Mathf.Abs(secondNeighborSquareX - rawX))
-            {
-                currentX = firstNeighborSquareX;
-            }
-            else
-            {
-                currentX = secondNeighborSquareX;
-            }
-
-            if(currentX == -8)
-            {
-                currentX += 1;
-            }
-            else if(currentX == 8)
-            {
-                currentX -= 1;
-            }
-        }
-
-        if (activePiece && currentY % 2 == 0)
-        {
-            float firstNeighborSquareY = currentY - 1;
-            float secondNeighborSquareY = currentY + 1;
-
-            if (firstNeighborSquareY - rawY <= secondNeighborSquareY - rawY)
-            {
-                currentY = firstNeighborSquareY;
-            }
-            else
-            {
-                currentY = secondNeighborSquareY;
-            }
-
-            if (currentY == -8)
-            {
-                currentY += 1;
-            }
-            else if (currentY == 8)
-            {
-                currentY -= 1;
-            }
-        }
+        CheckIfPieceIsOutOfBoard(rawX, rawY);
+        currentX = PositionIfPieceIsBetweenSquares(rawX, currentX, true);
+        currentY = PositionIfPieceIsBetweenSquares(rawY, currentY, false);
 
         foreach (Square square in myBoard.board)
         {
-            if(activePiece && activePiece.GetPotentialMoves().Contains(square))
+            if (activePiece && activePiece.GetPotentialMoves().Contains(square))
             {
                 moveCondition = true;
             }
@@ -143,22 +88,72 @@ public class ChessGameplayManager : MonoBehaviour
 
             if (activePiece && moveCondition && square.transform.position.x == currentX && square.transform.position.y == currentY)
             {
-                square.HighlightSquare();
-                activePiece.GetCurrentSquare().HighlightSquare();
-                activePiece.ShowPotentialMoves();
-                activePiece.SetCurrentSquare(square);
-                activePiece.SetShadowVisibility();
-
-                if(activePiece.GetCurrentSquare() != activePiece.GetInitialSquare())
-                {
-                    activePiece.SetMovementActivity();
-                }
-
-                activePiece.SnapPositionToCurrentSquare();
+                SetupActivePieceAfterMovement(square);
                 break;
             }
         }
 
+        ResetActivePieceIfThereIsNoPossibleMove(moveCondition);
+        activePiece = null;
+    }
+
+    private void SetupActivePieceAfterMovement(Square square)
+    {
+        square.HighlightSquare();
+        activePiece.GetCurrentSquare().HighlightSquare();
+        activePiece.ShowPotentialMoves();
+        activePiece.SetCurrentSquare(square);
+        activePiece.SetShadowVisibility();
+        activePiece.SnapPositionToCurrentSquare();
+
+        if (activePiece.tag == "King" || activePiece.tag == "Pawn")
+        {
+            SpecialMovementActive();
+        }
+
+        if (activePiece.GetCurrentSquare() != activePiece.GetPreviousSquare())
+        {
+            activePiece.SetMovementActivity();
+        }
+    }
+
+    private void SpecialMovementActive()
+    {
+        if(activePiece.tag == "King")
+        {
+            float previousXPosition = activePiece.GetPreviousSquare().transform.position.x;
+            float currentXPosition = activePiece.GetCurrentSquare().transform.position.x;
+
+            float differenceInPositions = Mathf.Abs(currentXPosition - previousXPosition);
+
+            if(activePiece.GetNumberOfMoves() == 0 && differenceInPositions == 4)
+            {
+                Castling();
+            }
+        }
+        else
+        {
+            float currentYPosition = activePiece.GetCurrentSquare().transform.position.y;
+
+            if((currentYPosition == -7) || (currentYPosition == 7))
+            {
+                PawnPromotion();
+            }
+        }
+    }
+
+    private void PawnPromotion()
+    {
+        
+    }
+
+    private void Castling()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ResetActivePieceIfThereIsNoPossibleMove(bool moveCondition)
+    {
         if (!moveCondition && activePiece)
         {
             activePiece.GetCurrentSquare().HighlightSquare();
@@ -166,10 +161,63 @@ public class ChessGameplayManager : MonoBehaviour
             activePiece.SetShadowVisibility();
             activePiece.SnapPositionToCurrentSquare();
         }
-
-        activePiece = null;
     }
-    
+
+    private float PositionIfPieceIsBetweenSquares(float rawCoordinate, float currentCoordinate, bool xDirection)
+    {
+        float distanceToFirstNeighborSquareCoordinate;
+        float distanceToSecondNeighborSquareCoordinate;
+
+        if (activePiece && currentCoordinate % 2 == 0)
+        {
+            float firstNeighborSquareCoordinate = currentCoordinate - 1;
+            float secondNeighborSquareCoordinate = currentCoordinate + 1;
+
+            if (xDirection)
+            {
+                distanceToFirstNeighborSquareCoordinate = Mathf.Abs(firstNeighborSquareCoordinate - rawCoordinate);
+                distanceToSecondNeighborSquareCoordinate = Mathf.Abs(secondNeighborSquareCoordinate - rawCoordinate);
+            }
+            else
+            {
+                distanceToFirstNeighborSquareCoordinate = firstNeighborSquareCoordinate - rawCoordinate;
+                distanceToSecondNeighborSquareCoordinate = secondNeighborSquareCoordinate - rawCoordinate;
+            }
+
+            if (distanceToFirstNeighborSquareCoordinate <= distanceToSecondNeighborSquareCoordinate)
+            {
+                currentCoordinate = firstNeighborSquareCoordinate;
+            }
+            else
+            {
+                currentCoordinate = secondNeighborSquareCoordinate;
+            }
+
+            if (currentCoordinate == -8)
+            {
+                currentCoordinate += 1;
+            }
+            else if (currentCoordinate == 8)
+            {
+                currentCoordinate -= 1;
+            }
+        }
+
+        return currentCoordinate;
+    }
+
+    private void CheckIfPieceIsOutOfBoard(float rawX, float rawY)
+    {
+        if (activePiece && (rawY < -8 || rawY > 8 || rawX < -8 || rawX > 8))
+        {
+            activePiece.GetCurrentSquare().HighlightSquare();
+            activePiece.ShowPotentialMoves();
+            activePiece.SetShadowVisibility();
+            activePiece.SnapPositionToCurrentSquare();
+            activePiece = null;
+        }
+    }
+
     private Vector2 GetBoardPosition()
     {
         Vector2 currentCursorPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
@@ -185,12 +233,5 @@ public class ChessGameplayManager : MonoBehaviour
         float newY = Mathf.RoundToInt(rawWorldPosition.y);
 
         return new Vector2(newX, newY);
-    }
-
-    private bool IsValidMove()
-    {
-
-
-        return false;
     }
 }

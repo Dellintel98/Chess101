@@ -7,6 +7,7 @@ public class ChessPiece : MonoBehaviour
 {
     [SerializeField] public Sprite[] pieceSprites;
     [SerializeField] public GameObject shadowPrefab;
+    [SerializeField] public GameObject promotionModalBoxPrefab;
 
     private Color32 pieceColor;
     private string myPlayerColorTag;
@@ -14,11 +15,13 @@ public class ChessPiece : MonoBehaviour
     private ChessBoard myBoard;
     private Square initialSquare;
     private Square currentSquare;
+    private Square previousSquare;
     private List<Square> potentialMoves = new List<Square>();
     private bool iMoved;
     private int moveCounter;
     private GameObject myShadow;
     private bool visibleShadow;
+    private GameObject myModalBox;
 
 
     public void InitializePiece(Square boardPosition, string playerColorTag, ChessBoard chessBoard)
@@ -33,6 +36,7 @@ public class ChessPiece : MonoBehaviour
         myBoard = chessBoard;
         initialSquare = boardPosition;
         currentSquare = boardPosition;
+        previousSquare = boardPosition;
 
         boardPosition.SetContainedPiece(this);
 
@@ -177,14 +181,41 @@ public class ChessPiece : MonoBehaviour
         return initialSquare;
     }
 
+    public Square GetPreviousSquare()
+    {
+        return previousSquare;
+    }
+
     public void SetCurrentSquare(Square newSquare)
     {
         currentSquare.SetContainedPiece(null);
+        previousSquare = currentSquare;
         currentSquare = newSquare;
 
         if(currentSquare.GetContainedPiece() && currentSquare.GetContainedPiece().GetMyColorTag() != myPlayerColorTag)
         {
-            Destroy(currentSquare.GetContainedPiece().gameObject); // Odrediti pravila jedenja
+            Destroy(currentSquare.GetContainedPiece().gameObject);
+        }
+        else if(!currentSquare.GetContainedPiece() && transform.tag == "Pawn")
+        {
+            Square neighborSquare;
+
+            if (myPlayerColorTag == "Light")
+            {
+                neighborSquare = myBoard.GetSquareByVector3(new Vector3(currentSquare.transform.position.x, currentSquare.transform.position.y - 2, 0f));
+            }
+            else
+            {
+                neighborSquare = myBoard.GetSquareByVector3(new Vector3(currentSquare.transform.position.x, currentSquare.transform.position.y + 2, 0f));
+            }
+
+            ChessPiece neighborPiece = neighborSquare.GetContainedPiece();
+
+            if (neighborPiece && neighborPiece.GetMyColorTag() != myPlayerColorTag && neighborPiece.GetNumberOfMoves() == 1)
+            {
+                Destroy(neighborSquare.GetContainedPiece().gameObject);
+                neighborSquare.SetContainedPiece(null);
+            }
         }
 
         currentSquare.SetContainedPiece(this);
@@ -274,6 +305,7 @@ public class ChessPiece : MonoBehaviour
     {
         float myX = transform.position.x;
         float myY = transform.position.y - 1;
+        float numberOfPossibleMoves = 1f;
 
         ChessPiece myFirstRook = null;
         ChessPiece mySecondRook = null;
@@ -284,6 +316,8 @@ public class ChessPiece : MonoBehaviour
             myFirstRook = myBoard.GetSquareByVector3(new Vector3(7f, myY, 0f)).GetContainedPiece();
             mySecondRook = myBoard.GetSquareByVector3(new Vector3(-7f, myY, 0f)).GetContainedPiece();
             myFartherHorse = myBoard.GetSquareByVector3(new Vector3(-5f, myY, 0f)).GetContainedPiece();
+
+            numberOfPossibleMoves = 2f;
         }
 
         List<Vector3> calculations = CalculateDiagonalMoveCoordinates(1f, true, true);
@@ -292,8 +326,8 @@ public class ChessPiece : MonoBehaviour
         calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, false, false));
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, true, true));
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(1f, false, true));
-        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(2f, true, false));
-        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(2f, false, false));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(numberOfPossibleMoves, true, false));
+        calculations.AddRange(CalculateRowOrColumnMoveCoordinates(numberOfPossibleMoves, false, false));
 
         foreach (Vector3 calculation in calculations)
         {
@@ -359,7 +393,7 @@ public class ChessPiece : MonoBehaviour
             {
                 potentialMoves.Add(square);
             }
-            else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag)
+            else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag != "King")
             {
                 potentialMoves.Add(square);
             }
@@ -487,7 +521,7 @@ public class ChessPiece : MonoBehaviour
                 {
                     calculations.Add(position);
                 }
-                else if(square && piece && piece.GetMyColorTag() != myPlayerColorTag)
+                else if(square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag != "King")
                 {
                     calculations.Add(position);
                     break;
@@ -545,7 +579,7 @@ public class ChessPiece : MonoBehaviour
                 {
                     calculations.Add(position);
                 }
-                else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag)
+                else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag != "King")
                 {
                     calculations.Add(position);
                     break;
@@ -586,5 +620,11 @@ public class ChessPiece : MonoBehaviour
         }
 
         return calculations;
+    }
+
+    private void CreatePawnPromotionModalBox()
+    {
+        myModalBox = Instantiate(promotionModalBoxPrefab, new Vector3(transform.position.x, transform.position.y, -5f), Quaternion.identity, transform) as GameObject;
+        myModalBox.GetComponent<SpriteRenderer>().sortingLayerName = "PiecesLayer";
     }
 }
