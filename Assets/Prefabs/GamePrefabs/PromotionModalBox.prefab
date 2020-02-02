@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 603015115947000174}
   - component: {fileID: 8933659035282634745}
   - component: {fileID: 1530867920578772302}
+  - component: {fileID: -4409425132849392642}
   m_Layer: 0
   m_Name: PromotionModalBox
   m_TagString: Untagged
@@ -95,3 +96,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   promotionPieceObjectPrefab: {fileID: 7632854060381593216, guid: b133bf114beec4040b4a1b26015957ac,
     type: 3}
+--- !u!61 &-4409425132849392642
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4537987042798636671}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 6.75, y: 1.7333333}
+    newSize: {x: 8.1, y: 2.08}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 6.75, y: 1.7333333}
+  m_EdgeRadius: 0
