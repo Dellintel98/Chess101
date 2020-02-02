@@ -21,7 +21,7 @@ public class ChessPiece : MonoBehaviour
     private int moveCounter;
     private GameObject myShadow;
     private bool visibleShadow;
-    private GameObject myModalBox;
+    private PromotionModalBox myModalBox;
 
 
     public void InitializePiece(Square boardPosition, string playerColorTag, ChessBoard chessBoard)
@@ -622,9 +622,27 @@ public class ChessPiece : MonoBehaviour
         return calculations;
     }
 
+    public void ShowPawnPromotionModalBox()
+    {
+        CreatePawnPromotionModalBox();
+    }
+
     private void CreatePawnPromotionModalBox()
     {
-        myModalBox = Instantiate(promotionModalBoxPrefab, new Vector3(transform.position.x, transform.position.y, -5f), Quaternion.identity, transform) as GameObject;
+        float myYCoordinate;
+
+        myYCoordinate = transform.position.y - 3f;
+
+        if(myPlayerColorTag == "Dark")
+        {
+            myYCoordinate = transform.position.y + 3f;
+        }
+
+        GameObject modalBox = Instantiate(promotionModalBoxPrefab, new Vector3(transform.position.x, myYCoordinate, -5f), Quaternion.Euler(0, 0, 90f), transform);
+
+        myModalBox = modalBox.GetComponent<PromotionModalBox>();
         myModalBox.GetComponent<SpriteRenderer>().sortingLayerName = "PiecesLayer";
+
+        myModalBox.SetupPromotionalModalBox(this, pieceSprites);
     }
 }

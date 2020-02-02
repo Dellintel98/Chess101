@@ -144,7 +144,7 @@ public class ChessGameplayManager : MonoBehaviour
 
     private void PawnPromotion()
     {
-        
+        activePiece.ShowPawnPromotionModalBox();
     }
 
     private void Castling()
