@@ -53,10 +53,10 @@ public class PromotionModalBox : MonoBehaviour
 
         promotionPieceObject = Instantiate(promotionPieceObjectPrefab, new Vector3(transform.position.x, pieceYCoordinate, -6f), Quaternion.identity, transform);
         myPromotionPieces[index] = promotionPieceObject.GetComponent<PromotionPieceElement>();
-        myPromotionPieces[index].Setup(myPieceSprites[spriteIndex], myPieceColor);
+        myPromotionPieces[index].Setup(myPieceSprites[spriteIndex], myPieceColor, myChessPiece, this);
     }
 
-    private void OnMouseOver()
+    public void OnHover()
     {
         Vector2 currentCursorPosition = GetCursorGridPosition();
         Vector2 hoveredPromotionPiece;
@@ -91,5 +91,34 @@ public class PromotionModalBox : MonoBehaviour
         float newY = Mathf.RoundToInt(rawWorldPosition.y);
 
         return new Vector2(newX, newY);
+    }
+
+    public string GetTagEqualToPieceSprite(Sprite pieceSprite)
+    {
+        string pieceTag = "";
+
+        for (int i = 0; i < 4; i++)
+        {
+            if(myPieceSprites[i] == pieceSprite)
+            {
+                switch (i)
+                {
+                    case 0:
+                        pieceTag = "Rook";
+                        break;
+                    case 1:
+                        pieceTag = "Knight";
+                        break;
+                    case 2:
+                        pieceTag = "Bishop";
+                        break;
+                    case 3:
+                        pieceTag = "Queen";
+                        break;
+                }
+            }
+        }
+
+        return pieceTag;
     }
 }

@@ -12,6 +12,8 @@ public class ChessPiece : MonoBehaviour
     private Color32 pieceColor;
     private string myPlayerColorTag;
     //private string pieceState;
+    private string myInitialTag;
+    private ChessSet myChessSet;
     private ChessBoard myBoard;
     private Square initialSquare;
     private Square currentSquare;
@@ -24,7 +26,7 @@ public class ChessPiece : MonoBehaviour
     private PromotionModalBox myModalBox;
 
 
-    public void InitializePiece(Square boardPosition, string playerColorTag, ChessBoard chessBoard)
+    public void InitializePiece(Square boardPosition, string playerColorTag, ChessBoard chessBoard, ChessSet chessSet)
     {
         int spriteIndex;
 
@@ -33,6 +35,7 @@ public class ChessPiece : MonoBehaviour
         iMoved = false;
         moveCounter = 0;
 
+        myChessSet = chessSet;
         myBoard = chessBoard;
         initialSquare = boardPosition;
         currentSquare = boardPosition;
@@ -40,7 +43,7 @@ public class ChessPiece : MonoBehaviour
 
         boardPosition.SetContainedPiece(this);
 
-        spriteIndex = SetPieceTag();
+        spriteIndex = SetInitialPieceTag();
         SetPieceSprite(spriteIndex);
         SetPieceColor();
         SetPieceSortingLayer();
@@ -56,20 +59,23 @@ public class ChessPiece : MonoBehaviour
         myShadow.SetActive(visibleShadow);
     }
 
-    public void SetShadowVisibility()
+    public void SetShadowVisibility(bool isCastling)
     {
-        visibleShadow = !visibleShadow;
-
-        if (!visibleShadow)
+        if (!isCastling)
         {
-            transform.position = new Vector3(transform.position.x, myShadow.transform.position.y + 0.5f, transform.position.z);
-        }
-        else
-        {
-            transform.position = new Vector3(transform.position.x, transform.position.y + 1f, -5f);
-        }
+            visibleShadow = !visibleShadow;
 
-        myShadow.SetActive(visibleShadow);
+            if (!visibleShadow)
+            {
+                transform.position = new Vector3(transform.position.x, myShadow.transform.position.y + 0.5f, transform.position.z);
+            }
+            else
+            {
+                transform.position = new Vector3(transform.position.x, transform.position.y + 1f, -5f);
+            }
+
+            myShadow.SetActive(visibleShadow);
+        }
     }
 
     private void SetPieceSortingLayer()
@@ -91,7 +97,7 @@ public class ChessPiece : MonoBehaviour
         GetComponent<SpriteRenderer>().color = pieceColor;
     }
 
-    private int SetPieceTag()
+    private int SetInitialPieceTag()
     {
         int x = initialSquare.GetSquarePosition().x;
         int y = initialSquare.GetSquarePosition().y;
@@ -132,10 +138,16 @@ public class ChessPiece : MonoBehaviour
             spriteIndex = 5;
         }
 
-        gameObject.tag = pieceTag;
+        SetPieceTag(pieceTag);
+        myInitialTag = pieceTag;
         SetPieceName(y);
 
         return spriteIndex;
+    }
+
+    private void SetPieceTag(string pieceTag)
+    {
+        gameObject.tag = pieceTag;
     }
 
     private void SetPieceName(int pieceIndex)
@@ -150,9 +162,25 @@ public class ChessPiece : MonoBehaviour
         GetComponent<SpriteRenderer>().sprite = pieceSprites[spriteIndex];
     }
 
+    private void SetPieceSpriteBySpriteElement(Sprite pieceSprite)
+    {
+        GetComponent<SpriteRenderer>().sprite = pieceSprite;
+    }
+
+    public void ChangePawnToSelectedPiece(Sprite pieceSprite, string pieceTag)
+    {
+        SetPieceSpriteBySpriteElement(pieceSprite);
+        SetPieceTag(pieceTag);
+    }
+
     public string GetMyColorTag()
     {
         return myPlayerColorTag;
+    }
+
+    public ChessSet GetMyChessSet()
+    {
+        return myChessSet;
     }
 
     public void MovePiece()
@@ -251,11 +279,14 @@ public class ChessPiece : MonoBehaviour
         return moveCounter;
     }
 
-    public void ShowPotentialMoves()
+    public void ShowPotentialMoves(bool isCastling)
     {
-        foreach(Square square in potentialMoves)
+        if (!isCastling)
         {
-            square.SetPotentialMoveMarkVisibility();
+            foreach (Square square in potentialMoves)
+            {
+                square.SetPotentialMoveMarkVisibility();
+            }
         }
     }
 
@@ -515,7 +546,12 @@ public class ChessPiece : MonoBehaviour
                 }
 
                 Square square = myBoard.GetSquareByVector3(position);
-                ChessPiece piece = square.GetContainedPiece();
+                ChessPiece piece = null;
+
+                if (square)
+                {
+                    piece = square.GetContainedPiece();
+                }
 
                 if (square && !piece)
                 {
@@ -527,6 +563,10 @@ public class ChessPiece : MonoBehaviour
                     break;
                 }
                 else if(square && piece && piece.GetMyColorTag() == myPlayerColorTag)
+                {
+                    break;
+                }
+                else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag == "King")
                 {
                     break;
                 }
@@ -573,7 +613,12 @@ public class ChessPiece : MonoBehaviour
                 Vector3 position = new Vector3(newXCoordinate, newYCoordinate, 0f);
 
                 Square square = myBoard.GetSquareByVector3(position);
-                ChessPiece piece = square.GetContainedPiece();
+                ChessPiece piece = null;
+
+                if (square)
+                {
+                    piece = square.GetContainedPiece();
+                }
 
                 if (square && !piece)
                 {
@@ -625,6 +670,11 @@ public class ChessPiece : MonoBehaviour
     public void ShowPawnPromotionModalBox()
     {
         CreatePawnPromotionModalBox();
+    }
+
+    public void DestroyPawnPromotionModalBox()
+    {
+        Destroy(myModalBox.gameObject);
     }
 
     private void CreatePawnPromotionModalBox()

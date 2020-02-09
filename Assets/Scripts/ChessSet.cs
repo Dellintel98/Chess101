@@ -6,20 +6,22 @@ public class ChessSet : MonoBehaviour
 {
     [SerializeField] public GameObject piecePrefab;
 
+    private int mySetIndex;
     private string chessSetColorTag;
     private ChessBoard myBoard;
     private ChessPiece[,] pieceSet = new ChessPiece[2, 8]; // [0,] => Royalty row, [1,] => Pawn row
 
-    public void CreatePieceSet(ChessBoard chessBoard, string playerColorTag)
+    public void CreatePieceSet(ChessBoard chessBoard, string playerColorTag, int setIndex)
     {
         myBoard = chessBoard;
         chessSetColorTag = playerColorTag;
+        mySetIndex = setIndex;
 
-        if(chessSetColorTag == "Dark")
+        if (chessSetColorTag == "Dark")
         {
-            for(int row = 0; row <= 1; row++)
+            for (int row = 0; row <= 1; row++)
             {
-                for(int column = 0; column < 8; column++)
+                for (int column = 0; column < 8; column++)
                 {
                     Square currentSquare;
                     currentSquare = myBoard.board[row, column];
@@ -49,11 +51,41 @@ public class ChessSet : MonoBehaviour
         Vector3 vector3 = currentSquare.transform.position;
         GameObject piece = Instantiate(piecePrefab, new Vector3(vector3.x, vector3.y, 0f), Quaternion.identity, gameObject.transform);
         pieceSet[setRow, setColumn] = piece.GetComponent<ChessPiece>();
-        pieceSet[setRow, setColumn].InitializePiece(currentSquare, playerColorTag, myBoard);
+        pieceSet[setRow, setColumn].InitializePiece(currentSquare, playerColorTag, myBoard, this);
     }
 
     public string GetColorTag()
     {
         return chessSetColorTag;
+    }
+
+    public ChessPiece GetPieceByVector3(Vector3 rawPosition)
+    {
+        foreach (ChessPiece piece in pieceSet)
+        {
+            if (piece.transform.position == rawPosition)
+            {
+                return piece;
+            }
+        }
+
+        return null;
+    }
+
+    public ChessPiece GetPieceByTagAndVector3(string pieceTag, Vector3 rawPosition)
+    {
+        ChessPiece piece = GetPieceByVector3(rawPosition);
+
+        if (piece && piece.tag == pieceTag)
+        {
+            return piece;
+        }
+
+        return null;
+    }
+
+    public int GetMySetIndex()
+    {
+        return mySetIndex;
     }
 }

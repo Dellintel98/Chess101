@@ -30,7 +30,7 @@ public class ChessManager : MonoBehaviour
         {
             GameObject newSet = Instantiate(chessSetPrefab, gameObject.transform);
             chessSets[i] = newSet.GetComponent<ChessSet>();
-            chessSets[i].CreatePieceSet(chessBoard, playerColorTag[i]);
+            chessSets[i].CreatePieceSet(chessBoard, playerColorTag[i], i);
         }
     }
 

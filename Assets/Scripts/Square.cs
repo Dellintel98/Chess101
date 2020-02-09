@@ -84,17 +84,20 @@ public class Square : MonoBehaviour
         spriteRenderer.color = squareColor;
     }
 
-    public void HighlightSquare()
+    public void HighlightSquare(bool isCastling)
     {
-        visibleHighlight = !visibleHighlight;
+        if (!isCastling)
+        {
+            visibleHighlight = !visibleHighlight;
 
-        if (visibleHighlight)
-        {
-            spriteRenderer.color = Color.Lerp(squareColor, specialColor, 0.5f);
-        }
-        else
-        {
-            spriteRenderer.color = squareColor;
+            if (visibleHighlight)
+            {
+                spriteRenderer.color = Color.Lerp(squareColor, specialColor, 0.5f);
+            }
+            else
+            {
+                spriteRenderer.color = squareColor;
+            }
         }
     }
 

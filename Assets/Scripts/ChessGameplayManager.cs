@@ -32,7 +32,7 @@ public class ChessGameplayManager : MonoBehaviour
             {
                 if (!square.IsHighlighted())
                 {
-                    square.HighlightSquare();
+                    square.HighlightSquare(isCastling:false);
                 }
                 activePiece = square.GetContainedPiece();
 
@@ -41,9 +41,9 @@ public class ChessGameplayManager : MonoBehaviour
                     activePiece.ResetMovementActivity();
                 }
 
-                activePiece.SetShadowVisibility();
+                activePiece.SetShadowVisibility(isCastling:false);
                 activePiece.RecomputePotentialMoves();
-                activePiece.ShowPotentialMoves();
+                activePiece.ShowPotentialMoves(isCastling:false);
                 break;
             }
         }
@@ -88,7 +88,7 @@ public class ChessGameplayManager : MonoBehaviour
 
             if (activePiece && moveCondition && square.transform.position.x == currentX && square.transform.position.y == currentY)
             {
-                SetupActivePieceAfterMovement(square);
+                SetupPieceAfterMovement(square, activePiece, isCastling:false);
                 break;
             }
         }
@@ -97,38 +97,54 @@ public class ChessGameplayManager : MonoBehaviour
         activePiece = null;
     }
 
-    private void SetupActivePieceAfterMovement(Square square)
+    private void SetupPieceAfterMovement(Square square, ChessPiece piece, bool isCastling)
     {
-        square.HighlightSquare();
-        activePiece.GetCurrentSquare().HighlightSquare();
-        activePiece.ShowPotentialMoves();
-        activePiece.SetCurrentSquare(square);
-        activePiece.SetShadowVisibility();
-        activePiece.SnapPositionToCurrentSquare();
+        bool specialMoveSuccessful = true;
+        square.HighlightSquare(isCastling:false);
+        piece.GetCurrentSquare().HighlightSquare(isCastling);
+        piece.ShowPotentialMoves(isCastling);
+        piece.SetCurrentSquare(square);
+        piece.SetShadowVisibility(isCastling);
+        piece.SnapPositionToCurrentSquare();
 
-        if (activePiece.tag == "King" || activePiece.tag == "Pawn")
+        if (piece.tag == "King" || piece.tag == "Pawn")
         {
-            SpecialMovementActive();
+            specialMoveSuccessful = SpecialMovementActive();
         }
 
-        if (activePiece.GetCurrentSquare() != activePiece.GetPreviousSquare())
+        if (specialMoveSuccessful && piece.GetCurrentSquare() != piece.GetPreviousSquare())
         {
-            activePiece.SetMovementActivity();
+            piece.SetMovementActivity();
+        }
+
+        if (!specialMoveSuccessful)
+        {
+
         }
     }
 
-    private void SpecialMovementActive()
+    private bool SpecialMovementActive()
     {
+        bool specialMoveSuccessful = false;
+
         if(activePiece.tag == "King")
         {
             float previousXPosition = activePiece.GetPreviousSquare().transform.position.x;
             float currentXPosition = activePiece.GetCurrentSquare().transform.position.x;
 
-            float differenceInPositions = Mathf.Abs(currentXPosition - previousXPosition);
+            float differenceInPositions = currentXPosition - previousXPosition;
 
-            if(activePiece.GetNumberOfMoves() == 0 && differenceInPositions == 4)
+            if(activePiece.GetNumberOfMoves() == 0 && (differenceInPositions == 4 || differenceInPositions == -4))
             {
-                Castling();
+                try
+                {
+                    Castling(differenceInPositions);
+                    specialMoveSuccessful = true;
+                }
+                catch
+                {
+                    specialMoveSuccessful = false;
+                }
             }
         }
         else
@@ -137,28 +153,86 @@ public class ChessGameplayManager : MonoBehaviour
 
             if((currentYPosition == -7) || (currentYPosition == 7))
             {
-                PawnPromotion();
+                try
+                {
+                    PawnPromotion();
+                    specialMoveSuccessful = true;
+                }
+                catch
+                {
+                    specialMoveSuccessful = false;
+                }
             }
         }
+
+        return specialMoveSuccessful;
     }
 
     private void PawnPromotion()
     {
-        activePiece.ShowPawnPromotionModalBox();
+        Exception PawnPromotionNotPossibleException = new Exception();
+
+        try
+        {
+            activePiece.ShowPawnPromotionModalBox();
+        }
+        catch
+        {
+            throw PawnPromotionNotPossibleException;
+        }
     }
 
-    private void Castling()
+    private void Castling(float differenceInPositions)
     {
-        throw new NotImplementedException();
+        Exception CastlingNotPossibleException = new Exception();
+        ChessPiece castlingRook;
+        Square destinationSquare = null;
+        int setIndex;
+        float myX = activePiece.transform.position.x;
+        float myY = activePiece.transform.position.y;
+        float myZ = activePiece.transform.position.z;
+
+        setIndex = activePiece.GetMyChessSet().GetMySetIndex();
+
+        if (differenceInPositions == 4)
+        {
+            castlingRook = mySets[setIndex].GetPieceByTagAndVector3("Rook", new Vector3(myX + 2, myY, myZ));
+            destinationSquare = myBoard.GetSquareByVector3(new Vector3(myX - 2, myY, myZ));
+        }
+        else if (differenceInPositions == -4)
+        {
+            castlingRook = mySets[setIndex].GetPieceByTagAndVector3("Rook", new Vector3(myX - 4, myY, myZ));
+            destinationSquare = myBoard.GetSquareByVector3(new Vector3(myX + 2, myY, myZ));
+        }
+        else
+        {
+            throw CastlingNotPossibleException;
+        }
+
+        if (castlingRook)
+        {
+            if (castlingRook.GetNumberOfMoves() == 0)
+            {
+                SetupPieceAfterMovement(destinationSquare, castlingRook, isCastling: true);
+            }
+            else
+            {
+                throw CastlingNotPossibleException;
+            }
+        }
+        else
+        {
+            throw CastlingNotPossibleException;
+        } 
     }
 
     private void ResetActivePieceIfThereIsNoPossibleMove(bool moveCondition)
     {
         if (!moveCondition && activePiece)
         {
-            activePiece.GetCurrentSquare().HighlightSquare();
-            activePiece.ShowPotentialMoves();
-            activePiece.SetShadowVisibility();
+            activePiece.GetCurrentSquare().HighlightSquare(isCastling:false);
+            activePiece.ShowPotentialMoves(isCastling:false);
+            activePiece.SetShadowVisibility(isCastling:false);
             activePiece.SnapPositionToCurrentSquare();
         }
     }
@@ -210,9 +284,9 @@ public class ChessGameplayManager : MonoBehaviour
     {
         if (activePiece && (rawY < -8 || rawY > 8 || rawX < -8 || rawX > 8))
         {
-            activePiece.GetCurrentSquare().HighlightSquare();
-            activePiece.ShowPotentialMoves();
-            activePiece.SetShadowVisibility();
+            activePiece.GetCurrentSquare().HighlightSquare(isCastling:false);
+            activePiece.ShowPotentialMoves(isCastling:false);
+            activePiece.SetShadowVisibility(isCastling:false);
             activePiece.SnapPositionToCurrentSquare();
             activePiece = null;
         }
