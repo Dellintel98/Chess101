@@ -10,6 +10,7 @@ public class ChessSet : MonoBehaviour
     private string chessSetColorTag;
     private ChessBoard myBoard;
     private ChessPiece[,] pieceSet = new ChessPiece[2, 8]; // [0,] => Royalty row, [1,] => Pawn row
+    private List<Square> potentialMoves = new List<Square>();
 
     public void CreatePieceSet(ChessBoard chessBoard, string playerColorTag, int setIndex)
     {

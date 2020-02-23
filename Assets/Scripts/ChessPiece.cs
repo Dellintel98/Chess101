@@ -568,6 +568,7 @@ public class ChessPiece : MonoBehaviour
                 }
                 else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag == "King")
                 {
+                    //Ovdje staviti kod koji postavlja da je protivnički kralj napadnut, na temelju čega će se na početku OnMouseDown ispitati je li šah, šahmat, remi i sl.
                     break;
                 }
             }
@@ -631,6 +632,11 @@ public class ChessPiece : MonoBehaviour
                 }
                 else if (square && piece && piece.GetMyColorTag() == myPlayerColorTag)
                 {
+                    break;
+                }
+                else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag == "King")
+                {
+                    //Ovdje staviti kod koji postavlja da je protivnički kralj napadnut, na temelju čega će se na početku OnMouseDown ispitati je li šah, šahmat, remi i sl.
                     break;
                 }
             }

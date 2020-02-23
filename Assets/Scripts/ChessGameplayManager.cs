@@ -59,7 +59,7 @@ public class ChessGameplayManager : MonoBehaviour
 
     private void OnMouseUp()
     {
-        bool moveCondition = false;
+        bool moveCondition;
         float rawX = 0f;
         float rawY = 0f;
         Vector2 currentPosition = GetBoardPosition();
@@ -75,22 +75,20 @@ public class ChessGameplayManager : MonoBehaviour
         currentX = PositionIfPieceIsBetweenSquares(rawX, currentX, true);
         currentY = PositionIfPieceIsBetweenSquares(rawY, currentY, false);
 
-        foreach (Square square in myBoard.board)
-        {
-            if (activePiece && activePiece.GetPotentialMoves().Contains(square))
-            {
-                moveCondition = true;
-            }
-            else
-            {
-                moveCondition = false;
-            }
+        Square square = myBoard.GetSquareByVector3(new Vector3(currentX, currentY, 0f));
 
-            if (activePiece && moveCondition && square.transform.position.x == currentX && square.transform.position.y == currentY)
-            {
-                SetupPieceAfterMovement(square, activePiece, isCastling:false);
-                break;
-            }
+        if (activePiece && activePiece.GetPotentialMoves().Contains(square))
+        {
+            moveCondition = true;
+        }
+        else
+        {
+            moveCondition = false;
+        }
+
+        if (activePiece && moveCondition && square.transform.position.x == currentX && square.transform.position.y == currentY)
+        {
+            SetupPieceAfterMovement(square, activePiece, isCastling: false);
         }
 
         ResetActivePieceIfThereIsNoPossibleMove(moveCondition);
@@ -119,7 +117,7 @@ public class ChessGameplayManager : MonoBehaviour
 
         if (!specialMoveSuccessful)
         {
-
+            //Debug.Log("Provjeru raditi u funkciji SpecialMovementActive, u catch dijelu, a ne ovdje jer ovdje je false i kod normalnih pokreta kralja ili pijuna!=>");
         }
     }
 
@@ -163,6 +161,10 @@ public class ChessGameplayManager : MonoBehaviour
                     specialMoveSuccessful = false;
                 }
             }
+            else
+            {
+                specialMoveSuccessful = true;
+            }
         }
 
         return specialMoveSuccessful;
@@ -186,7 +188,7 @@ public class ChessGameplayManager : MonoBehaviour
     {
         Exception CastlingNotPossibleException = new Exception();
         ChessPiece castlingRook;
-        Square destinationSquare = null;
+        Square destinationSquare;
         int setIndex;
         float myX = activePiece.transform.position.x;
         float myY = activePiece.transform.position.y;
@@ -223,7 +225,7 @@ public class ChessGameplayManager : MonoBehaviour
         else
         {
             throw CastlingNotPossibleException;
-        } 
+        }
     }
 
     private void ResetActivePieceIfThereIsNoPossibleMove(bool moveCondition)
