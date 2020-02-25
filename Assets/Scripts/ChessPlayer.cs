@@ -4,23 +4,54 @@ using UnityEngine;
 
 public class ChessPlayer : MonoBehaviour
 {
-    private string playerColorTag;
+    private int myIndex;
+    private string mySetColorTag;
+    private string myPlayerName;
+    private ChessBoard myChessBoard;
 
-
-    // Start is called before the first frame update
-    void Start()
+    public void InitializePlayer(ChessBoard chessBoard, string chosenColor, int playerIndex, string playerName)
     {
-        
+        myIndex = playerIndex;
+        mySetColorTag = chosenColor;
+        myPlayerName = playerName;
+        myChessBoard = chessBoard;
+
+        transform.name = $"{mySetColorTag} Colored Player - {myPlayerName}";
+
+        if(mySetColorTag == "Light")
+        {
+            tag = "Active";
+        }
+        else
+        {
+            tag = "Waiting";
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public string GetMyChosenColor()
     {
-        
+        return mySetColorTag;
     }
 
-    public void InitializePlayer(string chosenTag)
+    public int GetPlayerIndex()
     {
-        playerColorTag = chosenTag;
+        return myIndex;
+    }
+
+    public string GetMyState()
+    {
+        return tag;
+    }
+
+    public void SetMyState(string state)
+    {
+        if(state == "Active" || state == "Waiting" || state == "Won" || state == "Lost" || state == "Remi")
+        {
+            tag = state;
+        }
+        else
+        {
+            //staviti bacanje greške
+        }
     }
 }

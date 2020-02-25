@@ -7,14 +7,16 @@ public class ChessGameplayManager : MonoBehaviour
 {
     //private int currentRound;
     //private bool isThereAWinner;
+    private ChessPlayer[] myPlayers = new ChessPlayer[2];
     private ChessSet[] mySets = new ChessSet[2];
     private ChessBoard myBoard;
     private ChessPiece activePiece;
 
-    public void InitializeGame(ChessSet[] sets, ChessBoard chessBoard)
+    public void InitializeGame(ChessSet[] sets, ChessBoard chessBoard, ChessPlayer[] players)
     {
         //isThereAWinner = false;
         //currentRound = 0;
+        myPlayers = players;
         mySets = sets;
         myBoard = chessBoard;
         activePiece = null;
@@ -30,20 +32,27 @@ public class ChessGameplayManager : MonoBehaviour
         {
             if (!activePiece && square.GetContainedPiece() && square.transform.position.x == currentX && square.transform.position.y == currentY)
             {
-                if (!square.IsHighlighted())
-                {
-                    square.HighlightSquare(isCastling:false);
-                }
                 activePiece = square.GetContainedPiece();
 
+                if (!activePiece.GetMyChessSet().IsMyPlayersTurn())
+                {
+                    activePiece = null;
+                    break;
+                }
+
+                if (!square.IsHighlighted())
+                {
+                    square.HighlightSquare(isCastling: false);
+                }
+                
                 if (activePiece.HaveIMoved())
                 {
                     activePiece.ResetMovementActivity();
                 }
 
-                activePiece.SetShadowVisibility(isCastling:false);
+                activePiece.SetShadowVisibility(isCastling: false);
                 activePiece.RecomputePotentialMoves();
-                activePiece.ShowPotentialMoves(isCastling:false);
+                activePiece.ShowPotentialMoves(isCastling: false);
                 break;
             }
         }
@@ -113,6 +122,11 @@ public class ChessGameplayManager : MonoBehaviour
         if (specialMoveSuccessful && piece.GetCurrentSquare() != piece.GetPreviousSquare())
         {
             piece.SetMovementActivity();
+
+            if (!isCastling)
+            {
+                SwitchPlayerTurn();
+            }
         }
 
         if (!specialMoveSuccessful)
@@ -143,6 +157,10 @@ public class ChessGameplayManager : MonoBehaviour
                 {
                     specialMoveSuccessful = false;
                 }
+            }
+            else
+            {
+                specialMoveSuccessful = true;
             }
         }
         else
@@ -309,5 +327,15 @@ public class ChessGameplayManager : MonoBehaviour
         float newY = Mathf.RoundToInt(rawWorldPosition.y);
 
         return new Vector2(newX, newY);
+    }
+
+    private void SwitchPlayerTurn()
+    {
+        if (activePiece)
+        {
+            int setIndex = activePiece.GetMyChessSet().GetMySetIndex();
+            mySets[setIndex].SetMyPlayersState("Waiting");
+            mySets[1 - setIndex].SetMyPlayersState("Active");
+        }
     }
 }

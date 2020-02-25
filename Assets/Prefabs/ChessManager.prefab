@@ -45,6 +45,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chessSetPrefab: {fileID: 6039202058021115793, guid: 4a2ff397261a53345b44c5a65198bbd7,
     type: 3}
-  chessSets:
-  - {fileID: 0}
-  - {fileID: 0}
+  chessPlayerPrefab: {fileID: 4347949001468561197, guid: 36715d709847e3549a12332c8249ed84,
+    type: 3}

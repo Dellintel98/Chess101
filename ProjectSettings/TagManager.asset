@@ -13,6 +13,11 @@ TagManager:
   - Rook
   - Pawn
   - White Figure
+  - Active
+  - Waiting
+  - Won
+  - Lost
+  - Remi
   layers:
   - Default
   - TransparentFX

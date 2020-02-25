@@ -7,18 +7,20 @@ public class ChessSet : MonoBehaviour
     [SerializeField] public GameObject piecePrefab;
 
     private int mySetIndex;
-    private string chessSetColorTag;
+    private string myColorTag;
     private ChessBoard myBoard;
+    private ChessPlayer myPlayer;
     private ChessPiece[,] pieceSet = new ChessPiece[2, 8]; // [0,] => Royalty row, [1,] => Pawn row
     private List<Square> potentialMoves = new List<Square>();
 
-    public void CreatePieceSet(ChessBoard chessBoard, string playerColorTag, int setIndex)
+    public void CreatePieceSet(ChessBoard chessBoard, ChessPlayer chessPlayer, int setIndex)
     {
         myBoard = chessBoard;
-        chessSetColorTag = playerColorTag;
+        myPlayer = chessPlayer;
+        myColorTag = myPlayer.GetMyChosenColor();
         mySetIndex = setIndex;
 
-        if (chessSetColorTag == "Dark")
+        if (myColorTag == "Dark")
         {
             for (int row = 0; row <= 1; row++)
             {
@@ -26,7 +28,7 @@ public class ChessSet : MonoBehaviour
                 {
                     Square currentSquare;
                     currentSquare = myBoard.board[row, column];
-                    SetPiece(currentSquare, row, column, playerColorTag);
+                    SetPiece(currentSquare, row, column, myColorTag);
                 }
             }
 
@@ -40,7 +42,7 @@ public class ChessSet : MonoBehaviour
                 {
                     Square currentSquare;
                     currentSquare = myBoard.board[row, column];
-                    SetPiece(currentSquare, 7 - row, column, playerColorTag);
+                    SetPiece(currentSquare, 7 - row, column, myColorTag);
                 }
             }
             transform.name = "Light Colored ChessSet";
@@ -57,7 +59,7 @@ public class ChessSet : MonoBehaviour
 
     public string GetColorTag()
     {
-        return chessSetColorTag;
+        return myColorTag;
     }
 
     public ChessPiece GetPieceByVector3(Vector3 rawPosition)
@@ -88,5 +90,22 @@ public class ChessSet : MonoBehaviour
     public int GetMySetIndex()
     {
         return mySetIndex;
+    }
+
+    public bool IsMyPlayersTurn()
+    {
+        if(myPlayer.transform.tag == "Active")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void SetMyPlayersState(string state)
+    {
+        myPlayer.SetMyState(state);
     }
 }
