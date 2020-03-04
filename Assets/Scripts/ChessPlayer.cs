@@ -45,7 +45,7 @@ public class ChessPlayer : MonoBehaviour
 
     public void SetMyState(string state)
     {
-        if(state == "Active" || state == "Waiting" || state == "Won" || state == "Lost" || state == "Remi")
+        if(state == "Active" || state == "Waiting" || state == "Won" || state == "Lost" || state == "Remi" || state == "Disqualified")
         {
             tag = state;
         }

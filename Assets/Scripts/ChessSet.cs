@@ -12,13 +12,15 @@ public class ChessSet : MonoBehaviour
     private ChessPlayer myPlayer;
     private ChessPiece[,] pieceSet = new ChessPiece[2, 8]; // [0,] => Royalty row, [1,] => Pawn row
     private List<Square> potentialMoves = new List<Square>();
+    private ChessSet enemyChessSet;
 
-    public void CreatePieceSet(ChessBoard chessBoard, ChessPlayer chessPlayer, int setIndex)
+    public void CreatePieceSet(ChessBoard chessBoard, ChessPlayer chessPlayer, int setIndex, ChessSet opponent)
     {
         myBoard = chessBoard;
         myPlayer = chessPlayer;
         myColorTag = myPlayer.GetMyChosenColor();
         mySetIndex = setIndex;
+        enemyChessSet = opponent;
 
         if (myColorTag == "Dark")
         {
@@ -107,5 +109,83 @@ public class ChessSet : MonoBehaviour
     public void SetMyPlayersState(string state)
     {
         myPlayer.SetMyState(state);
+    }
+
+    public ChessSet GetMyEnemyChessSet()
+    {
+        return enemyChessSet;
+    }
+
+    public bool IsSquareAttackedByMyPieces(Square desiredSquare)
+    {
+        foreach(ChessPiece piece in pieceSet)
+        {
+            if (piece.GetPotentialMoves().Contains(desiredSquare))
+            {
+                if (piece.tag != "Pawn" && piece.tag != "King")
+                {
+                    return true;
+                }
+                else if (piece.tag == "Pawn")
+                {
+                    var pieceXPosition = piece.transform.position.x;
+
+                    foreach (Square potentialMove in piece.GetPotentialMoves())
+                    {
+                        if(potentialMove.GetSquarePositionCode() == desiredSquare.GetSquarePositionCode())
+                        {
+                            if (potentialMove.transform.position.x == pieceXPosition)
+                            {
+                                return false;
+                            }
+
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    public bool IsSquareAttackedByMyKing(Square desiredSquare)
+    {
+        foreach (ChessPiece piece in pieceSet)
+        {
+            if (piece.GetPotentialMoves().Contains(desiredSquare))
+            {
+                if (piece.tag == "King")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public bool IsSquareAttackedByMyQueenRookBishop(Square desiredSquare)
+    {
+        foreach (ChessPiece piece in pieceSet)
+        {
+            if (piece.GetPotentialMoves().Contains(desiredSquare))
+            {
+                if (piece.tag != "Pawn" && piece.tag != "King" && piece.tag != "Knight")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public void RecomputeAllPotentialMoves()
+    {
+        foreach(ChessPiece piece in pieceSet)
+        {
+            piece.RecomputePotentialMoves();
+        }
     }
 }

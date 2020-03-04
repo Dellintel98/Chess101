@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ChessGameplayManager : MonoBehaviour
 {
-    //private int currentRound;
+    private int currentRound;
     //private bool isThereAWinner;
     private ChessPlayer[] myPlayers = new ChessPlayer[2];
     private ChessSet[] mySets = new ChessSet[2];
@@ -15,12 +15,27 @@ public class ChessGameplayManager : MonoBehaviour
     public void InitializeGame(ChessSet[] sets, ChessBoard chessBoard, ChessPlayer[] players)
     {
         //isThereAWinner = false;
-        //currentRound = 0;
+        currentRound = 1;
         myPlayers = players;
         mySets = sets;
         myBoard = chessBoard;
         activePiece = null;
     }
+
+    /*private void OnMouseOver()
+    {
+        Vector2 currentPosition = GetBoardPosition();
+        float currentX = currentPosition.x;
+        float currentY = currentPosition.y;
+
+        foreach (Square square in myBoard.board)
+        {
+            if (square.GetContainedPiece() && square.transform.position.x == currentX && square.transform.position.y == currentY)
+            {
+                //Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            }
+        }
+    }*/
 
     private void OnMouseDown()
     {
@@ -125,12 +140,17 @@ public class ChessGameplayManager : MonoBehaviour
 
             if (!isCastling)
             {
+                //piece.RecomputePotentialMoves();
+                //mySets[0].RecomputeAllPotentialMoves();
+                //mySets[1].RecomputeAllPotentialMoves();
                 SwitchPlayerTurn();
+                IncreaseRoundNumber();
             }
         }
 
         if (!specialMoveSuccessful)
         {
+            Debug.Log("Error - Greška");
             //Debug.Log("Provjeru raditi u funkciji SpecialMovementActive, u catch dijelu, a ne ovdje jer ovdje je false i kod normalnih pokreta kralja ili pijuna!=>");
         }
     }
@@ -336,6 +356,17 @@ public class ChessGameplayManager : MonoBehaviour
             int setIndex = activePiece.GetMyChessSet().GetMySetIndex();
             mySets[setIndex].SetMyPlayersState("Waiting");
             mySets[1 - setIndex].SetMyPlayersState("Active");
+        }
+    }
+
+    private void IncreaseRoundNumber()
+    {
+        foreach(ChessPlayer player in myPlayers)
+        {
+            if(player.GetMyChosenColor() == "Light" && player.tag == "Active")
+            {
+                currentRound++;
+            }
         }
     }
 }
