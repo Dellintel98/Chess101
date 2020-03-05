@@ -185,7 +185,14 @@ public class ChessSet : MonoBehaviour
     {
         foreach(ChessPiece piece in pieceSet)
         {
-            piece.RecomputePotentialMoves();
+            if(piece.GetPieceState() == "Alive" || piece.GetPieceState() == "Promoted")
+            {
+                piece.RecomputePotentialMoves();
+            }
+            else
+            {
+                piece.ClearPotentialMovesIfDead();
+            }
         }
     }
 }

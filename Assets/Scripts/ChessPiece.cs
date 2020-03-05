@@ -11,7 +11,7 @@ public class ChessPiece : MonoBehaviour
 
     private Color32 pieceColor;
     private string myPlayerColorTag;
-    //private string pieceState;
+    private string pieceState;
     private string myInitialTag;
     private ChessSet myChessSet;
     private ChessBoard myBoard;
@@ -33,7 +33,7 @@ public class ChessPiece : MonoBehaviour
         int spriteIndex;
 
         myPlayerColorTag = playerColorTag;
-        //pieceState = "alive";
+        pieceState = "Alive";
         iMoved = false;
         moveCounter = 0;
         attackingEnemyKing = false;
@@ -53,6 +53,19 @@ public class ChessPiece : MonoBehaviour
         SetPieceSortingLayer();
 
         CreatePieceShadow();
+    }
+
+    public string GetPieceState()
+    {
+        return pieceState;
+    }
+
+    public void SetPieceState(string newState)
+    {
+        if(newState == "Dead" || newState == "Promoted")
+        {
+            pieceState = newState;
+        }
     }
 
     private void CreatePieceShadow()
@@ -226,7 +239,9 @@ public class ChessPiece : MonoBehaviour
 
         if(currentSquare.GetContainedPiece() && currentSquare.GetContainedPiece().GetMyColorTag() != myPlayerColorTag)
         {
-            Destroy(currentSquare.GetContainedPiece().gameObject);
+            currentSquare.GetContainedPiece().gameObject.SetActive(false);
+            currentSquare.GetContainedPiece().SetPieceState("Dead");
+            //Destroy(currentSquare.GetContainedPiece().gameObject);
         }
         else if(!currentSquare.GetContainedPiece() && transform.tag == "Pawn")
         {
@@ -245,7 +260,9 @@ public class ChessPiece : MonoBehaviour
 
             if (neighborPiece && neighborPiece.GetMyColorTag() != myPlayerColorTag && neighborPiece.GetNumberOfMoves() == 1)
             {
-                Destroy(neighborSquare.GetContainedPiece().gameObject);
+                //Destroy(neighborSquare.GetContainedPiece().gameObject);
+                neighborSquare.GetContainedPiece().gameObject.SetActive(false);
+                neighborSquare.GetContainedPiece().SetPieceState("Dead");
                 neighborSquare.SetContainedPiece(null);
             }
         }
@@ -299,6 +316,14 @@ public class ChessPiece : MonoBehaviour
         return potentialMoves;
     }
 
+    public void ClearPotentialMovesIfDead()
+    {
+        if(pieceState == "Dead")
+        {
+            potentialMoves.Clear();
+        }
+    }
+
     public void RecomputePotentialMoves()
     {
         ComputePotentialMoves();
@@ -341,7 +366,13 @@ public class ChessPiece : MonoBehaviour
     private void PotentialKingMoves()
     {
         float myX = transform.position.x;
-        float myY = transform.position.y - 1;
+        float myY = transform.position.y;
+
+        if(myY % 2 == 0)
+        {
+            myY--;
+        }
+
         float numberOfPossibleMoves = 1f;
 
         ChessPiece myFirstRook = null;
@@ -352,9 +383,29 @@ public class ChessPiece : MonoBehaviour
 
         if(moveCounter == 0)
         {
-            myFirstRook = myBoard.GetSquareByVector3(new Vector3(7f, myY, 0f)).GetContainedPiece();
-            mySecondRook = myBoard.GetSquareByVector3(new Vector3(-7f, myY, 0f)).GetContainedPiece();
-            myFartherHorse = myBoard.GetSquareByVector3(new Vector3(-5f, myY, 0f)).GetContainedPiece();
+            Square temporarySquare = myBoard.GetSquareByVector3(new Vector3(7f, myY, 0f));
+
+            if (temporarySquare)
+            {
+                myFirstRook = temporarySquare.GetContainedPiece();
+            }
+
+            temporarySquare = myBoard.GetSquareByVector3(new Vector3(-7f, myY, 0f));
+
+            if (temporarySquare)
+            {
+                mySecondRook = temporarySquare.GetContainedPiece();
+            }
+
+            temporarySquare = myBoard.GetSquareByVector3(new Vector3(-5f, myY, 0f));
+
+            if (temporarySquare)
+            {
+                myFartherHorse = temporarySquare.GetContainedPiece();
+            }
+            //myFirstRook = myBoard.GetSquareByVector3(new Vector3(7f, myY, 0f)).GetContainedPiece();
+            //mySecondRook = myBoard.GetSquareByVector3(new Vector3(-7f, myY, 0f)).GetContainedPiece();
+            //myFartherHorse = myBoard.GetSquareByVector3(new Vector3(-5f, myY, 0f)).GetContainedPiece();
 
             numberOfPossibleMoves = 2f;
         }
@@ -448,7 +499,12 @@ public class ChessPiece : MonoBehaviour
         foreach (Vector3 calculation in calculations)
         {
             Square square = myBoard.GetSquareByVector3(calculation);
-            ChessPiece piece = square.GetContainedPiece();
+            ChessPiece piece = null;
+
+            if (square)
+            {
+                piece = square.GetContainedPiece();
+            }
 
             if (square && !piece)
             {
@@ -566,7 +622,12 @@ public class ChessPiece : MonoBehaviour
 
         if (isVerticalMove)
         {
-            coordinate = transform.position.y - 1;
+            coordinate = transform.position.y;
+
+            if(coordinate % 2 == 0)
+            {
+                coordinate--;
+            }
         }
         else
         {
@@ -597,7 +658,13 @@ public class ChessPiece : MonoBehaviour
                 }
                 else
                 {
-                    position = new Vector3(newCoordinate, transform.position.y - 1, 0f);
+                    float yCoordinate = transform.position.y;
+                    if(yCoordinate % 2 == 0)
+                    {
+                        yCoordinate--;
+                    }
+
+                    position = new Vector3(newCoordinate, yCoordinate, 0f);
                 }
 
                 Square square = myBoard.GetSquareByVector3(position);
@@ -643,11 +710,16 @@ public class ChessPiece : MonoBehaviour
 
         float signum = 1f;
         float xCoordinate = transform.position.x;
-        float yCoordinate = transform.position.y - 1;
+        float yCoordinate = transform.position.y;
         float newXCoordinate;
         float newYCoordinate;
         float verticalDirection = 1f;
         float horizontalDirection = 1f;
+
+        if(yCoordinate % 2 == 0)
+        {
+            yCoordinate--;
+        }
 
         if (myPlayerColorTag == "Dark")
         {
@@ -716,7 +788,12 @@ public class ChessPiece : MonoBehaviour
         List<Vector3> potentialCalculations = new List<Vector3>();
 
         float myX = transform.position.x;
-        float myY = transform.position.y - 1;
+        float myY = transform.position.y;
+        
+        if(myY % 2 == 0)
+        {
+            myY--;
+        }
 
         potentialCalculations.Add(new Vector3(myX + 2, myY + 4, 0f));
         potentialCalculations.Add(new Vector3(myX + 4, myY + 2, 0f));

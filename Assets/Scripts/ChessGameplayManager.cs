@@ -83,40 +83,52 @@ public class ChessGameplayManager : MonoBehaviour
 
     private void OnMouseUp()
     {
-        bool moveCondition;
-        float rawX = 0f;
-        float rawY = 0f;
-        Vector2 currentPosition = GetBoardPosition();
-        float currentX = currentPosition.x;
-        float currentY = currentPosition.y;
-
         if (activePiece)
         {
-            rawX = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y)).x;
-            rawY = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y)).y;
-        }
-        CheckIfPieceIsOutOfBoard(rawX, rawY);
-        currentX = PositionIfPieceIsBetweenSquares(rawX, currentX, true);
-        currentY = PositionIfPieceIsBetweenSquares(rawY, currentY, false);
+            bool moveCondition;
+            Vector2 currentPosition = GetBoardPosition();
+            float currentX = currentPosition.x;
+            float currentY = currentPosition.y;
 
-        Square square = myBoard.GetSquareByVector3(new Vector3(currentX, currentY, 0f));
+            float rawX = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y)).x;
+            float rawY = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y)).y;
 
-        if (activePiece && activePiece.GetPotentialMoves().Contains(square))
-        {
-            moveCondition = true;
-        }
-        else
-        {
-            moveCondition = false;
-        }
+            CheckIfPieceIsOutOfBoard(rawX, rawY);
+            if (!activePiece)
+            {
+                return;
+            }
 
-        if (activePiece && moveCondition && square.transform.position.x == currentX && square.transform.position.y == currentY)
-        {
-            SetupPieceAfterMovement(square, activePiece, isCastling: false);
-        }
+            currentX = PositionIfPieceIsBetweenSquares(rawX, currentX, true);
+            currentY = PositionIfPieceIsBetweenSquares(rawY, currentY, false);
 
-        ResetActivePieceIfThereIsNoPossibleMove(moveCondition);
-        activePiece = null;
+            Square square = myBoard.GetSquareByVector3(new Vector3(currentX, currentY, 0f));
+
+            if (activePiece.GetPotentialMoves().Contains(square))
+            {
+                moveCondition = true;
+            }
+            else
+            {
+                moveCondition = false;
+            }
+
+            if (moveCondition && square.transform.position.x == currentX && square.transform.position.y == currentY)
+            {
+                SetupPieceAfterMovement(square, activePiece, isCastling: false);
+            }
+
+            ResetActivePieceIfThereIsNoPossibleMove(moveCondition);
+            //activePiece = null;
+
+            if (moveCondition)
+            {
+                int activePieceSetIndex = activePiece.GetMyChessSet().GetMySetIndex();
+                mySets[1 - activePieceSetIndex].RecomputeAllPotentialMoves();
+                mySets[activePieceSetIndex].RecomputeAllPotentialMoves();
+            }
+            activePiece = null;
+        }
     }
 
     private void SetupPieceAfterMovement(Square square, ChessPiece piece, bool isCastling)
@@ -141,8 +153,6 @@ public class ChessGameplayManager : MonoBehaviour
             if (!isCastling)
             {
                 //piece.RecomputePotentialMoves();
-                //mySets[0].RecomputeAllPotentialMoves();
-                //mySets[1].RecomputeAllPotentialMoves();
                 SwitchPlayerTurn();
                 IncreaseRoundNumber();
             }
