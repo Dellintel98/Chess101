@@ -116,7 +116,7 @@ public class ChessSet : MonoBehaviour
         return enemyChessSet;
     }
 
-    public bool IsSquareAttackedByMyPieces(Square desiredSquare)
+    public bool IsSquareAttackedByMyPieces(Square desiredSquare, Square currentSquare)
     {
         foreach(ChessPiece piece in pieceSet)
         {
@@ -139,6 +139,40 @@ public class ChessSet : MonoBehaviour
                                 return false;
                             }
 
+                            return true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (currentSquare && piece.AmIAttackingEnemyKing())
+                {
+                    if (piece.tag == "Rook" || piece.tag == "Bishop" || piece.tag == "Queen")
+                    {
+                        float attackingPieceX = piece.transform.position.x;
+                        float attackingPieceY = piece.transform.position.y;
+                        if(attackingPieceY % 2 == 0)
+                        {
+                            attackingPieceY--;
+                        }
+                        
+                        float kingX = currentSquare.transform.position.x;
+                        float kingY = currentSquare.transform.position.y;
+
+                        float desiredPositionX = desiredSquare.transform.position.x;
+                        float desiredPositionY = desiredSquare.transform.position.y;
+
+                        float kLineDirection;
+                        float yAddition;
+
+                        kLineDirection = (attackingPieceY - kingY) / (attackingPieceX - kingX);
+                        yAddition = kingY - (kingX * kLineDirection);
+
+                        float resultingY = Mathf.RoundToInt((kLineDirection * desiredPositionX) + yAddition);
+
+                        if(resultingY == desiredPositionY)
+                        {
                             return true;
                         }
                     }

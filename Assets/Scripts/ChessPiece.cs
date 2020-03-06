@@ -378,8 +378,6 @@ public class ChessPiece : MonoBehaviour
         ChessPiece myFirstRook = null;
         ChessPiece mySecondRook = null;
         ChessPiece myFartherHorse = null;
-        bool isKingSideCastlingPossible = true;
-        bool isQueenSideCastlingPossible = true;
 
         if(moveCounter == 0)
         {
@@ -426,16 +424,22 @@ public class ChessPiece : MonoBehaviour
 
             bool isMovePossible = IsSquareSafeForKing(square);
 
-            if(isMovePossible && calculation.x == myX + 4 && isKingSideCastlingPossible)
+            if (isMovePossible && calculation.x == myX + 4)
             {
-                if (myFirstRook && !piece && myFirstRook.GetNumberOfMoves() == 0)
+                Square temporarySquare = myBoard.GetSquareByVector3(new Vector3(myX + 2, myY, 0f));
+
+                bool isKingSideCastlingPossible = IsSquareSafeForKing(temporarySquare);
+                if (isKingSideCastlingPossible && myFirstRook && !piece && myFirstRook.GetNumberOfMoves() == 0)
                 {
                     potentialMoves.Add(square);
                 }
             }
-            else if(isMovePossible && calculation.x == myX - 4 && isQueenSideCastlingPossible)
+            else if(isMovePossible && calculation.x == myX - 4)
             {
-                if (mySecondRook && !myFartherHorse && !piece && mySecondRook.GetNumberOfMoves() == 0)
+                Square temporarySquare = myBoard.GetSquareByVector3(new Vector3(myX - 2, myY, 0f));
+
+                bool isQueenSideCastlingPossible = IsSquareSafeForKing(temporarySquare);
+                if (isQueenSideCastlingPossible && mySecondRook && !myFartherHorse && !piece && mySecondRook.GetNumberOfMoves() == 0)
                 {
                     potentialMoves.Add(square);
                 }
@@ -447,17 +451,6 @@ public class ChessPiece : MonoBehaviour
             else if (isMovePossible && piece && piece.GetMyColorTag() != myPlayerColorTag)
             {
                 potentialMoves.Add(square);
-            }
-            else if (!isMovePossible && !piece)
-            {
-                if (calculation.x == myX + 2)
-                {
-                    isKingSideCastlingPossible = false;
-                }
-                else if (calculation.x == myX - 2)
-                {
-                    isQueenSideCastlingPossible = false;
-                }
             }
         }
     }
@@ -606,6 +599,10 @@ public class ChessPiece : MonoBehaviour
                 if(neighborPiece && neighborPiece.GetMyColorTag() != myPlayerColorTag && neighborPiece.GetNumberOfMoves() == 1)
                 {
                     potentialMoves.Add(square);
+                    neighborPiece.SetMovementActivity(); //Ovo maknuti odavdje i napraviti neku funkciju koju će se pozivati ukoliko sljedeća osoba nakon ovog
+                    // pomaka pomakne neku drugu figuru, a ne pijuna ovog i sl.
+                    // isto tako staviti i funkciju za uklanjanje highlighta
+                    // napraviti da se odabirom čitavog polja može odabrati figura na njemu
                 }
             }
         }
@@ -848,7 +845,7 @@ public class ChessPiece : MonoBehaviour
     {
         ChessSet enemySet = myChessSet.GetMyEnemyChessSet();
 
-        if (enemySet.IsSquareAttackedByMyPieces(desiredMove))
+        if (enemySet.IsSquareAttackedByMyPieces(desiredMove, currentSquare))
         {
             return false;
         }
