@@ -8,6 +8,7 @@ public class ChessPlayer : MonoBehaviour
     private string mySetColorTag;
     private string myPlayerName;
     private ChessBoard myChessBoard;
+    private ChessPiece myLastMovedPiece;
 
     public void InitializePlayer(ChessBoard chessBoard, string chosenColor, int playerIndex, string playerName)
     {
@@ -15,6 +16,7 @@ public class ChessPlayer : MonoBehaviour
         mySetColorTag = chosenColor;
         myPlayerName = playerName;
         myChessBoard = chessBoard;
+        myLastMovedPiece = null;
 
         transform.name = $"{mySetColorTag} Colored Player - {myPlayerName}";
 
@@ -53,5 +55,15 @@ public class ChessPlayer : MonoBehaviour
         {
             //staviti bacanje greške
         }
+    }
+
+    public ChessPiece GetLastMovedPiece()
+    {
+        return myLastMovedPiece;
+    }
+
+    public void SetLastMovedPiece(ChessPiece piece)
+    {
+        myLastMovedPiece = piece;
     }
 }

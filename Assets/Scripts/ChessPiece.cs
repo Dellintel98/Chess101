@@ -19,8 +19,11 @@ public class ChessPiece : MonoBehaviour
     private Square currentSquare;
     private Square previousSquare;
     private List<Square> potentialMoves = new List<Square>();
+    private List<Square> mainPieceMoves = new List<Square>();   // Only for king and pawn
     private bool attackingEnemyKing;
     private bool defendingMyKing;
+    private bool amIBlocked;
+    private bool amIProtectedByMyPieces;
     private bool iMoved;
     private int moveCounter;
     private GameObject myShadow;
@@ -38,8 +41,10 @@ public class ChessPiece : MonoBehaviour
         moveCounter = 0;
         attackingEnemyKing = false;
         defendingMyKing = false;
+        amIBlocked = false;
+        amIProtectedByMyPieces = false;
 
-        myChessSet = playerChessSet;
+    myChessSet = playerChessSet;
         myBoard = chessBoard;
         initialSquare = boardPosition;
         currentSquare = boardPosition;
@@ -245,6 +250,11 @@ public class ChessPiece : MonoBehaviour
         }
         else if(!currentSquare.GetContainedPiece() && transform.tag == "Pawn")
         {
+            if(Mathf.Abs(currentSquare.transform.position.y - previousSquare.transform.position.y) == 4f)
+            {
+                pieceState = "Possible EnPassant";
+            }
+
             Square neighborSquare;
 
             if (myPlayerColorTag == "Light")
@@ -287,7 +297,17 @@ public class ChessPiece : MonoBehaviour
         if (iMoved)
         {
             moveCounter++;
+
+            if (tag == "Pawn" && pieceState == "Possible EnPassant" && moveCounter > 1)
+            {
+                pieceState = "Alive";
+            }
         }
+    }
+
+    public void IncreaseMoveCounter()
+    {
+        moveCounter++;
     }
 
     public void ResetMovementActivity()
@@ -316,9 +336,9 @@ public class ChessPiece : MonoBehaviour
         return potentialMoves;
     }
 
-    public void ClearPotentialMovesIfDead()
+    public void ClearPotentialMovesIfDeadOrBlocked()
     {
-        if(pieceState == "Dead")
+        if(pieceState == "Dead" || amIBlocked)
         {
             potentialMoves.Clear();
         }
@@ -336,6 +356,7 @@ public class ChessPiece : MonoBehaviour
             potentialMoves.Clear();
             defendingMyKing = false;
             attackingEnemyKing = false;
+            amIBlocked = false;
         }
 
         switch (transform.tag)
@@ -365,6 +386,11 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialKingMoves()
     {
+        if (mainPieceMoves.Count > 0)
+        {
+            mainPieceMoves.Clear();
+        }
+
         float myX = transform.position.x;
         float myY = transform.position.y;
 
@@ -447,10 +473,16 @@ public class ChessPiece : MonoBehaviour
             else if (isMovePossible && !piece)
             {
                 potentialMoves.Add(square);
+                mainPieceMoves.Add(square);
             }
             else if (isMovePossible && piece && piece.GetMyColorTag() != myPlayerColorTag)
             {
                 potentialMoves.Add(square);
+                mainPieceMoves.Add(square);
+            }
+            else if(!isMovePossible && calculation.x != myX - 4 && calculation.x != myX + 4)
+            {
+                mainPieceMoves.Add(square);
             }
         }
     }
@@ -467,11 +499,6 @@ public class ChessPiece : MonoBehaviour
         calculations.AddRange(CalculateDiagonalMoveCoordinates(7f, false, true));
         calculations.AddRange(CalculateDiagonalMoveCoordinates(7f, true, false));
         calculations.AddRange(CalculateDiagonalMoveCoordinates(7f, false, false));
-
-        if (!CanIBeMoved())
-        {
-            return;
-        }
 
         foreach (Vector3 calculation in calculations)
         {
@@ -507,21 +534,14 @@ public class ChessPiece : MonoBehaviour
             {
                 potentialMoves.Add(square);
             }
-            else if (square && piece && piece.GetMyColorTag() == myPlayerColorTag && piece.tag == "King")
-            {
-                defendingMyKing = true;
-            }
             else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag == "King")
             {
-                //Ovdje staviti kod koji postavlja da je protivnički kralj napadnut, na temelju čega će se na početku OnMouseDown ispitati je li šah, šahmat, remi i sl.
                 attackingEnemyKing = true;
             }
-        }
-
-        if (!CanIBeMoved())
-        {
-            potentialMoves.Clear();
-            return;
+            else if(square && piece && piece.GetMyColorTag() == myPlayerColorTag)
+            {
+                piece.SetPieceProtectionValue(protectionValue: true);
+            }
         }
     }
 
@@ -531,11 +551,6 @@ public class ChessPiece : MonoBehaviour
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(7f, false, true));
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(7f, true, false));
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(7f, false, false));
-
-        if (!CanIBeMoved())
-        {
-            return;
-        }
 
         foreach (Vector3 calculation in calculations)
         {
@@ -551,6 +566,11 @@ public class ChessPiece : MonoBehaviour
 
     private void PotentialPawnMoves()
     {
+        if(mainPieceMoves.Count > 0)
+        {
+            mainPieceMoves.Clear();
+        }
+
         float numberOfPotentialForwardMoves = 2f;
 
         if(moveCounter > 0)
@@ -562,11 +582,6 @@ public class ChessPiece : MonoBehaviour
         calculations.AddRange(CalculateRowOrColumnMoveCoordinates(numberOfPotentialForwardMoves, true, true));
         calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, true, true));
         calculations.AddRange(CalculateDiagonalMoveCoordinates(1f, true, false));
-
-        if (!CanIBeMoved())
-        {
-            return;
-        }
 
         foreach (Vector3 calculation in calculations)
         {
@@ -596,14 +611,15 @@ public class ChessPiece : MonoBehaviour
 
                 ChessPiece neighborPiece = neighborSquare.GetContainedPiece();
 
-                if(neighborPiece && neighborPiece.GetMyColorTag() != myPlayerColorTag && neighborPiece.GetNumberOfMoves() == 1)
+                if(neighborPiece && neighborPiece.GetMyColorTag() != myPlayerColorTag && neighborPiece.GetNumberOfMoves() == 1 && neighborPiece.GetPieceState() == "Possible EnPassant")
                 {
                     potentialMoves.Add(square);
-                    neighborPiece.SetMovementActivity(); //Ovo maknuti odavdje i napraviti neku funkciju koju će se pozivati ukoliko sljedeća osoba nakon ovog
-                    // pomaka pomakne neku drugu figuru, a ne pijuna ovog i sl.
-                    // isto tako staviti i funkciju za uklanjanje highlighta
-                    // napraviti da se odabirom čitavog polja može odabrati figura na njemu
                 }
+            }
+
+            if(calculation.x != transform.position.x)
+            {
+                mainPieceMoves.Add(square);
             }
         }
     }
@@ -683,15 +699,15 @@ public class ChessPiece : MonoBehaviour
                 }
                 else if(square && piece && piece.GetMyColorTag() == myPlayerColorTag)
                 {
-                    if(piece.tag == "King")
+                    if(tag == "King" || tag == "Queen" || tag == "Rook")
                     {
-                        defendingMyKing = true;
+                        piece.SetPieceProtectionValue(protectionValue: true);
                     }
+
                     break;
                 }
                 else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag == "King")
                 {
-                    //Ovdje staviti kod koji postavlja da je protivnički kralj napadnut, na temelju čega će se na početku OnMouseDown ispitati je li šah, šahmat, remi i sl.
                     attackingEnemyKing = true;
                     break;
                 }
@@ -761,15 +777,15 @@ public class ChessPiece : MonoBehaviour
                 }
                 else if (square && piece && piece.GetMyColorTag() == myPlayerColorTag)
                 {
-                    if (piece.tag == "King")
+                    if (tag == "King" || tag == "Queen" || tag == "Bishop" || tag == "Pawn")
                     {
-                        defendingMyKing = true;
+                        piece.SetPieceProtectionValue(protectionValue: true);
                     }
+
                     break;
                 }
                 else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag == "King")
                 {
-                    //Ovdje staviti kod koji postavlja da je protivnički kralj napadnut, na temelju čega će se na početku OnMouseDown ispitati je li šah, šahmat, remi i sl.
                     attackingEnemyKing = true;
                     break;
                 }
@@ -844,6 +860,7 @@ public class ChessPiece : MonoBehaviour
     public bool IsSquareSafeForKing(Square desiredMove)
     {
         ChessSet enemySet = myChessSet.GetMyEnemyChessSet();
+        ChessPiece pieceOnDesiredMove = desiredMove.GetContainedPiece();
 
         if (enemySet.IsSquareAttackedByMyPieces(desiredMove, currentSquare))
         {
@@ -851,21 +868,14 @@ public class ChessPiece : MonoBehaviour
         }
         else if (enemySet.IsSquareAttackedByMyKing(desiredMove))
         {
-            // Postaviti nešto kako se ne bi moglo pomicati na to polje al' da je dostupno u potential moves zbog prethodne provjere u if-u
-            //return false;
-            return true;
-        }
-
-        return true;
-    }
-
-    public bool CanIBeMoved()
-    {
-        ChessSet enemySet = myChessSet.GetMyEnemyChessSet();
-
-        if (defendingMyKing && enemySet.IsSquareAttackedByMyQueenRookBishop(currentSquare))
-        {
             return false;
+        }
+        else if (pieceOnDesiredMove)
+        {
+            if(pieceOnDesiredMove.GetMyColorTag() != myPlayerColorTag && pieceOnDesiredMove.AmIProtectedByMyPieces())
+            {
+                return false;
+            }
         }
 
         return true;
@@ -878,6 +888,73 @@ public class ChessPiece : MonoBehaviour
 
     public bool IsMyKingUnderAttack()
     {
-        return false;
+        ChessSet enemySet = myChessSet.GetMyEnemyChessSet();
+
+        return enemySet.AmIAttackingOpponentKing();
+    }
+
+    public void PromoteToKingDefender(bool promotionValue, ChessPiece attackerPiece=null)
+    {
+        Square temporarySquare = null;
+
+        defendingMyKing = promotionValue;
+
+        if (defendingMyKing)
+        {
+            if (attackerPiece && tag != "Pawn" && potentialMoves.Contains(attackerPiece.GetCurrentSquare()))
+            {
+                temporarySquare = attackerPiece.GetCurrentSquare();
+            }
+            else if(attackerPiece && tag == "Pawn" && mainPieceMoves.Contains(attackerPiece.GetCurrentSquare()))
+            {
+                temporarySquare = attackerPiece.GetCurrentSquare();
+            }
+
+            potentialMoves.Clear();
+
+            if (temporarySquare)
+            {
+                potentialMoves.Add(temporarySquare);
+            }
+        }
+    }
+
+    public void SetBlockValueOfAPiece(bool blockValue)
+    {
+        amIBlocked = blockValue;
+    }
+
+    public bool AmIBlocked()
+    {
+        return amIBlocked;
+    }
+
+    public bool AmIDefendingMyKing()
+    {
+        return defendingMyKing;
+    }
+
+    public List<Square> GetMainPieceMoves()
+    {
+        return mainPieceMoves;
+    }
+
+    public void ClearMovesThatCannotProtectKing(List<Square> movesThatCanProtectKing)
+    {
+        if(tag != "King" && !amIBlocked)
+        {
+            potentialMoves.Clear();
+            potentialMoves.AddRange(movesThatCanProtectKing);
+        }
+    }
+
+    public void SetPieceProtectionValue(bool protectionValue)
+    {
+        amIProtectedByMyPieces = protectionValue;
+    }
+
+    public bool AmIProtectedByMyPieces()
+    {
+        return amIProtectedByMyPieces;
     }
 }
