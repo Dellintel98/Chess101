@@ -10,20 +10,21 @@ public class PromotionModalBox : MonoBehaviour
     private PromotionPieceElement[] myPromotionPieces;
     private ChessPiece myChessPiece;
     private Color32 myPieceColor;
+    private Color32 mySpecialColor = new Color32(0xDB, 0xDB, 0xDB, 0xFF);
 
 
-    public void SetupPromotionalModalBox(ChessPiece chessPiece, Sprite[] sprites)
+    public void SetupPromotionalModalBox(ChessPiece chessPiece, SpritePieceSet sprites)
     {
         myChessPiece = chessPiece;
         myPromotionPieces = new PromotionPieceElement[4];
         myPieceSprites = new Sprite[4];
 
-        for(int i = 0; i < 4; i++)
-        {
-            myPieceSprites[i] = sprites[i];
-        }
+        myPieceSprites[0] = sprites.rook;
+        myPieceSprites[1] = sprites.knight;
+        myPieceSprites[2] = sprites.bishop;
+        myPieceSprites[3] = sprites.queen;
 
-        transform.GetComponent<SpriteRenderer>().color = Color.grey;
+        transform.GetComponent<SpriteRenderer>().color = mySpecialColor;
         myPieceColor = myChessPiece.transform.GetComponent<SpriteRenderer>().color;
 
         SetupPromotionPieces();

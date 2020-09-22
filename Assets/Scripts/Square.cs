@@ -9,6 +9,7 @@ public class Square : MonoBehaviour
 
     private Vector2Int squarePosition;
     private string squarePositionCode;
+    private string lowercaseSquarePositionCode;
     private string squareColorTag;
     private Color32 squareColor;
     private Color32 specialColor;
@@ -18,15 +19,15 @@ public class Square : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private ChessPiece containedPiece;
 
-    public void Setup(int row, int column)
+    public void Setup(int row, int column, Color32[] squareColorSet)
     {
         visibleHighlight = false;
-        specialColor = new Color32(0x1F, 0x7A, 0x8C, 0xFF); //#022b3a  #bfdbf7
+        specialColor = new Color32(0x1F, 0x7A, 0x8C, 0xFF); //#022b3a  #bfdbf7 OVO ISTO NAMISTIT OVISNO O BOJI POLJA
 
         SetPositionOnBoard(row, column);
         CreatePotentialMoveMark();
         containedPiece = null;
-        SetColor();
+        SetColor(squareColorSet);
     }
 
     private void SetPositionOnBoard(int row, int column)
@@ -36,6 +37,7 @@ public class Square : MonoBehaviour
         char columnCode = (char)(column + 65);
         int rowCode = 8 - row;
         squarePositionCode = $"{columnCode}{rowCode} {squarePosition}";
+        lowercaseSquarePositionCode = columnCode.ToString().ToLower() + rowCode.ToString();
 
         gameObject.name = "Square" + squarePositionCode;
     }
@@ -61,7 +63,7 @@ public class Square : MonoBehaviour
         myMoveMark.SetActive(visibleMoveMark);
     }
 
-    public void SetColor()
+    public void SetColor(Color32[] squareColors)
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
 
@@ -72,13 +74,15 @@ public class Square : MonoBehaviour
         {
             squareColorTag = "Dark";
             gameObject.tag = squareColorTag;
-            squareColor = new Color32(0x52, 0x51, 0x51, 0xFF);
+            squareColor = squareColors[1];
+            //squareColor = new Color32(0x52, 0x51, 0x51, 0xFF);
         }
         else
         {
             squareColorTag = "Light";
             gameObject.tag = squareColorTag;
-            squareColor = new Color32(0xC6, 0xC6, 0xC6, 0xFF);
+            squareColor = squareColors[0];
+            //squareColor = new Color32(0xC6, 0xC6, 0xC6, 0xFF);
         }
 
         spriteRenderer.color = squareColor;
@@ -123,6 +127,6 @@ public class Square : MonoBehaviour
 
     public string GetSquarePositionCode()
     {
-        return squarePositionCode;
+        return lowercaseSquarePositionCode;
     }
 }

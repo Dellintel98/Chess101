@@ -2,15 +2,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ChessGameplayManager : MonoBehaviour
 {
+    [SerializeField] public Button exportButton;
+    [SerializeField] public GameObject chessManagerObject;
+    [SerializeField] public GameObject scoreSheetObject;
     private int currentRound;
     private bool hasGameEnded;
     private ChessPlayer[] myPlayers = new ChessPlayer[2];
     private ChessSet[] mySets = new ChessSet[2];
     private ChessBoard myBoard;
     private ChessPiece activePiece;
+    private ScoreSheet myScoreSheet;
+    [HideInInspector] public string terminationString;
+    [HideInInspector] public bool isPromotionInProcess;
+    private int offerDrawCounter;
+    private string colorTagOfLastDrawOfferer;
+    private int lightPlayer50MoveCounter;
+    private int darkPlayer50MoveCounter;
+    private bool exportEnabled { get; set; }
 
     public void InitializeGame(ChessSet[] sets, ChessBoard chessBoard, ChessPlayer[] players)
     {
@@ -20,22 +32,19 @@ public class ChessGameplayManager : MonoBehaviour
         mySets = sets;
         myBoard = chessBoard;
         activePiece = null;
-    }
+        isPromotionInProcess = false;
+        offerDrawCounter = 0;
+        colorTagOfLastDrawOfferer = "";
+        lightPlayer50MoveCounter = 0;
+        darkPlayer50MoveCounter = 0;
+        myScoreSheet = scoreSheetObject.GetComponent<ScoreSheet>();
+        exportEnabled = false;
 
-    /*private void OnMouseOver()
-    {
-        Vector2 currentPosition = GetBoardPosition();
-        float currentX = currentPosition.x;
-        float currentY = currentPosition.y;
-
-        foreach (Square square in myBoard.board)
+        foreach (ChessPlayer player in myPlayers)
         {
-            if (square.GetContainedPiece() && square.transform.position.x == currentX && square.transform.position.y == currentY)
-            {
-                //Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-            }
+            player.SetMyGame(this);
         }
-    }*/
+    }
 
     private void OnMouseDown()
     {
@@ -44,6 +53,20 @@ public class ChessGameplayManager : MonoBehaviour
             return;
         }
 
+        foreach(ChessSet set in mySets)
+        {
+            if(set.AmIPromotingAPawn())
+            {
+                return;
+            }
+        }
+
+        foreach(ChessPlayer player in myPlayers)
+        {
+            if (!player.HasGameStarted() && player.GetMyState() == "Active")
+                player.GameHasStarted();
+        }
+        
         Vector2 currentPosition = GetBoardPosition();
         float currentX = currentPosition.x;
         float currentY = currentPosition.y;
@@ -56,6 +79,9 @@ public class ChessGameplayManager : MonoBehaviour
             if (!activePiece && square.GetContainedPiece() && squareX == currentX && squareY == currentY)
             {
                 activePiece = square.GetContainedPiece();
+                activePiece.ResetPromotionState();
+                if (activePiece.GetCastling("Either"))
+                    activePiece.ResetCastling();
 
                 if (!activePiece.GetMyChessSet().IsMyPlayersTurn())
                 {
@@ -128,6 +154,7 @@ public class ChessGameplayManager : MonoBehaviour
                 moveCondition = false;
             }
 
+            activePiece.ResetCaptureEnemyPiece();
             if (moveCondition && square.transform.position.x == currentX && square.transform.position.y == currentY)
             {
                 SetupPieceAfterMovement(square, activePiece, isCastling: false);
@@ -135,7 +162,7 @@ public class ChessGameplayManager : MonoBehaviour
 
             ResetActivePieceIfThereIsNoPossibleMove(moveCondition);
 
-            if (moveCondition)
+            if (moveCondition && !isPromotionInProcess)
             {
                 int activePieceSetIndex = activePiece.GetMyChessSet().GetMySetIndex();
                 int enemySetIndex = 1 - activePieceSetIndex;
@@ -161,6 +188,38 @@ public class ChessGameplayManager : MonoBehaviour
         }
     }
 
+    public void SetupPawnAfterPromotion(ChessPiece promotedPiece)
+    {
+        activePiece = promotedPiece;
+
+        if(activePiece)
+        {
+            SwitchPlayerTurn();
+            IncreaseRoundNumber();
+
+            int activePieceSetIndex = activePiece.GetMyChessSet().GetMySetIndex();
+            int enemySetIndex = 1 - activePieceSetIndex;
+
+            mySets[activePieceSetIndex].SetDefaultPiecesProtectionValue();
+            mySets[activePieceSetIndex].RecomputeAllPotentialMoves();
+
+            mySets[enemySetIndex].SetDefaultPiecesProtectionValue();
+            mySets[enemySetIndex].RecomputeAllPotentialMoves();
+
+            mySets[enemySetIndex].DetectKingDefenders();
+            mySets[activePieceSetIndex].DetectKingDefenders();
+
+            mySets[enemySetIndex].BlockOrUnblockPieces();
+
+            mySets[activePieceSetIndex].CheckIfEnPassantHasNotBeenUsed(activePiece);
+            mySets[activePieceSetIndex].GetMyPlayer().SetLastMovedPiece(activePiece);
+
+            CheckGameState();
+        }
+
+        activePiece = null;
+    }
+
     private void SetupPieceAfterMovement(Square square, ChessPiece piece, bool isCastling)
     {
         bool specialMoveSuccessful = true;
@@ -180,9 +239,14 @@ public class ChessGameplayManager : MonoBehaviour
         {
             piece.SetMovementActivity();
 
-            if (!isCastling)
+            if (!isCastling && !isPromotionInProcess)
             {
                 //piece.RecomputePotentialMoves();
+                //Debug.Log("Started waiting...");
+                //yield return new WaitWhile(() => isPromotionInProcess);
+                //Debug.Log("Waiting has finished.");
+
+
                 SwitchPlayerTurn();
                 IncreaseRoundNumber();
             }
@@ -197,7 +261,7 @@ public class ChessGameplayManager : MonoBehaviour
 
     private bool SpecialMovementActive()
     {
-        bool specialMoveSuccessful = false;
+        bool specialMoveSuccessful;
 
         if(activePiece.tag == "King")
         {
@@ -254,7 +318,7 @@ public class ChessGameplayManager : MonoBehaviour
 
         try
         {
-            activePiece.ShowPawnPromotionModalBox();
+            activePiece.ShowPawnPromotionModalBox(this);
         }
         catch
         {
@@ -278,11 +342,13 @@ public class ChessGameplayManager : MonoBehaviour
         {
             castlingRook = mySets[setIndex].GetPieceByTagAndVector3("Rook", new Vector3(myX + 2, myY, myZ));
             destinationSquare = myBoard.GetSquareByVector3(new Vector3(myX - 2, myY, myZ));
+            activePiece.SetCastling("Kingside");
         }
         else if (differenceInPositions == -4)
         {
             castlingRook = mySets[setIndex].GetPieceByTagAndVector3("Rook", new Vector3(myX - 4, myY, myZ));
             destinationSquare = myBoard.GetSquareByVector3(new Vector3(myX + 2, myY, myZ));
+            activePiece.SetCastling("Queenside");
         }
         else
         {
@@ -458,10 +524,11 @@ public class ChessGameplayManager : MonoBehaviour
 
     private void SwitchPlayerTurn()
     {
-        if (activePiece)
+        if (activePiece && activePiece.GetMyChessSet().GetMyPlayer().tag == "Active")
         {
             int setIndex = activePiece.GetMyChessSet().GetMySetIndex();
             mySets[setIndex].SetMyPlayersState("Waiting");
+            mySets[setIndex].GetMyPlayer().AddTimeIncrement();
             mySets[1 - setIndex].SetMyPlayersState("Active");
         }
     }
@@ -479,39 +546,79 @@ public class ChessGameplayManager : MonoBehaviour
 
     private void CheckGameState()
     {
+        if (hasGameEnded) return;
+
         ChessSet enemySet = activePiece.GetMyChessSet().GetMyEnemyChessSet();
         ChessPiece enemyKing = enemySet.GetPieceByTag("King");
+        string enemyColorTag = enemySet.GetColorTag();
+        string myColorTag = activePiece.GetMyColorTag();
+        //if(activePiece.GetMyChessSet().GetMyPlayer().tag == "Lost")
+        //{
+        //    hasGameEnded = true;
+        //    Debug.Log($"Game over: {myColorTag} colored player flagged! {enemyColorTag} colored player won!");
+        //}
+        bool isCheck = IsItCheck();
+        bool isCheckmate = IsItCheckmate(enemySet, enemyKing);
+        bool isRemi = IsItRemi();
+        bool isCheckFunctionArgument;
+        bool isCheckmateFunctionArgument;
 
-        if (IsItCheck())
+        if (isCheck && isCheckmate)
+            isCheckFunctionArgument = false;
+        else if (isCheck && !isCheckmate)
+            isCheckFunctionArgument = true;
+        else
+            isCheckFunctionArgument = false;
+
+        if (isCheck)
+            isCheckmateFunctionArgument = isCheckmate;
+        else
+            isCheckmateFunctionArgument = false;
+
+        hasGameEnded = false;
+        if (isCheck)
         {
-            Debug.Log("Check");
+            Debug.Log($"Check => Attacker: {myColorTag} - Defender: {enemyColorTag}");
 
-            if (IsItCheckmate(enemySet, enemyKing))
+            if (isCheckmate)
             {
-                Debug.Log("CHECKMATE!!!");
+                Debug.Log($"CHECKMATE!!! => Attacker: {myColorTag} - Defender: {enemyColorTag}");
                 hasGameEnded = true;
+                activePiece.GetMyChessSet().GetMyPlayer().SetMyState("Won");
+                activePiece.GetMyChessSet().GetMyEnemyChessSet().GetMyPlayer().SetMyState("Lost");
+                terminationString = "won by checkmate";
             }
             else
             {
                 if (enemySet.CountPiecesThatAreAttackingEnemyKing() > 1)
                 {
-                    Debug.Log("BLOCK ALL PIECES EXCEPT A KING! counter > 1");
+                    Debug.Log($"BLOCK ALL PIECES EXCEPT A KING! counter > 1 => Attacker: {myColorTag} - Defender: {enemyColorTag}");
                 }
                 else if(enemySet.CheckIfAnyOfMyPiecesCanProtectKing())
                 {
-                    Debug.Log("My King can be protected! counter == 1 ...BLOCK ALL PIECES THAT CANNOT PROTECT THE KING!");
+                    Debug.Log($"My King can be protected! counter == 1 ...BLOCK ALL PIECES THAT CANNOT PROTECT THE KING! => Attacker: {myColorTag} - Defender: {enemyColorTag}");
                 }
                 else
                 {
-                    Debug.Log("BLOCK ALL PIECES EXCEPT A KING! counter == 1");
+                    Debug.Log($"BLOCK ALL PIECES EXCEPT A KING! counter == 1 => Attacker: {myColorTag} - Defender: {enemyColorTag}");
                 }
             }
         }
-        else if (IsItRemi())
+        else if (isRemi)
         {
-            Debug.Log("REMI");
+            Debug.Log($"REMI => Attacker: {myColorTag} - Defender: {enemyColorTag}");
             hasGameEnded = true;
+            activePiece.GetMyChessSet().GetMyPlayer().SetMyState("Remi");
+            activePiece.GetMyChessSet().GetMyEnemyChessSet().GetMyPlayer().SetMyState("Remi");
         }
+
+        string winner = (hasGameEnded) ? ((isRemi) ? "None" : myColorTag) : "None";
+
+        int gameRound = (myColorTag == "Dark") ? currentRound - 1 : currentRound;
+
+        myScoreSheet.SetNewMove(activePiece.GetMyInitialTag(), activePiece.tag, activePiece.GetPreviousSquare().GetSquarePositionCode(), 
+            activePiece.GetCurrentSquare().GetSquarePositionCode(), gameRound, isCheckFunctionArgument, isCheckmateFunctionArgument, activePiece.GetCastling("Kingside"), 
+            activePiece.GetCastling("Queenside"), activePiece.DidICaptureEnemyPiece(), activePiece.HaveIJustBeenPromoted(), winner, isRemi, hasGameEnded, false, false);
     }
 
     private bool IsItCheck()
@@ -540,6 +647,230 @@ public class ChessGameplayManager : MonoBehaviour
 
     private bool IsItRemi()
     {
+        if(!hasGameEnded)
+        {
+            ChessSet mySet = activePiece.GetMyChessSet();
+            ChessSet myEnemySet = mySet.GetMyEnemyChessSet();
+
+            if(IsItStalemate())
+            {
+                terminationString = "Draw by stalemate";
+                return true;
+            }
+            if (IsItADeadPosition(mySet, myEnemySet, false))
+            {
+                terminationString = "Draw by insufficient material";
+                return true;
+            }
+            if (Is50MoveRuleApplicable())
+            {
+                terminationString = "Draw by enforcing a 50 move rule";
+                return true;
+            }
+            if (IsItThreeFoldRepetition())
+            {
+                terminationString = "Draw by threefold repetition";
+                return true;
+            }
+        }
+
         return false;
+    }
+
+    private bool IsItStalemate()
+    {
+        ChessSet myEnemySet = activePiece.GetMyChessSet().GetMyEnemyChessSet();
+
+        bool isCheck = IsItCheck();
+
+        if (isCheck)
+            return false;
+
+        return !myEnemySet.AreThereAnyPotentialMoves();
+    }
+
+    private bool IsItThreeFoldRepetition()
+    {
+        bool isA3XDraw = myScoreSheet.CheckIsItAThreefoldRepetition(activePiece.GetMyInitialTag(), activePiece.tag, activePiece.GetPreviousSquare().GetSquarePositionCode(),
+            activePiece.GetCurrentSquare().GetSquarePositionCode(), false, false, activePiece.DidICaptureEnemyPiece(), activePiece.HaveIJustBeenPromoted());
+
+        return isA3XDraw;
+    }
+
+    private bool Is50MoveRuleApplicable()
+    {
+        if(GetCurrentlyActivePlayer().GetMyChosenColor() == "Light")
+        {
+            if (activePiece.tag == "Pawn" || activePiece.DidICaptureEnemyPiece())
+                lightPlayer50MoveCounter = 0;
+            else
+                lightPlayer50MoveCounter++;
+        }
+        else
+        {
+            if (activePiece.tag == "Pawn" || activePiece.DidICaptureEnemyPiece())
+                darkPlayer50MoveCounter = 0;
+            else
+                darkPlayer50MoveCounter++;
+        }
+
+        if (lightPlayer50MoveCounter == 50 && darkPlayer50MoveCounter == 50)
+            return true;
+
+        return false;
+    }
+
+    public bool IsItADeadPosition(ChessSet mySet, ChessSet myEnemySet, bool isItTimeout)
+    {
+        List<string> myAlivePieces = mySet.GetListOfAllLivingPieces();
+        List<string> enemyAlivePieces = myEnemySet.GetListOfAllLivingPieces();
+
+        if(myAlivePieces.Count == 1 && enemyAlivePieces.Count == 1)
+        {
+            terminationString = isItTimeout ? "Draw by timeout vs insufficient material" : "";
+            return true;
+        }
+        else if(myAlivePieces.Count == 1 && enemyAlivePieces.Count == 2)
+        {
+            if(enemyAlivePieces.Contains("King") && (enemyAlivePieces.Contains("Knight") || enemyAlivePieces.Contains("Bishop")))
+            {
+                terminationString = isItTimeout ? "Draw by timeout vs insufficient material" : "";
+
+                return true;
+            }
+        }
+        else if (enemyAlivePieces.Count == 1 && myAlivePieces.Count == 2)
+        {
+            if (myAlivePieces.Contains("King") && (myAlivePieces.Contains("Knight") || myAlivePieces.Contains("Bishop")))
+            {
+                terminationString = isItTimeout ? "Draw by timeout vs insufficient material" : "";
+
+                return true;
+            }
+        }
+        else if (myAlivePieces.Count == 2 && enemyAlivePieces.Count == 2)
+        {
+            if (myAlivePieces.Contains("King") && myAlivePieces.Contains("Bishop") && enemyAlivePieces.Contains("King") && enemyAlivePieces.Contains("Bishop"))
+            {
+                string myBishopSquareColor = mySet.GetPieceByTag("Bishop").GetCurrentSquare().tag;
+                string enemyBishopSquareColor = mySet.GetPieceByTag("Bishop").GetCurrentSquare().tag;
+
+                if (myBishopSquareColor == enemyBishopSquareColor)
+                {
+                    terminationString = isItTimeout ? "Draw by timeout vs insufficient material" : "";
+
+                    return true;
+                }
+            }
+        }
+        else if (enemyAlivePieces.Count == 1 && myAlivePieces.Count >= 3 && isItTimeout)
+        {
+            terminationString = isItTimeout ? "Draw by timeout vs insufficient material" : "";
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public void SetPromotionInProcess()
+    {
+        isPromotionInProcess = true;
+    }
+
+    public void SetPromotionProcessEnd()
+    {
+        isPromotionInProcess = false;
+    }
+
+    public void SetFlaggingEndScore(string winner, bool isADraw)
+    {
+        hasGameEnded = true;
+        myScoreSheet.SetNewMove("", "", "", "", currentRound, false, false, false, false, false, false, winner, isADraw, hasGameEnded, false, false);
+    }
+
+    private ChessPlayer GetCurrentlyActivePlayer()
+    {
+        foreach(ChessPlayer player in myPlayers)
+        {
+            if (player.tag == "Active")
+                return player;
+        }
+
+        return null;
+    }
+
+    public void OfferADraw()
+    {
+        if(!hasGameEnded)
+        {
+            offerDrawCounter++;
+
+            ChessPlayer me = GetCurrentlyActivePlayer();
+            string myColorTag = me.GetMyChosenColor();
+
+            if (offerDrawCounter == 1)
+            {
+                Debug.Log($"Draw was offered by {myColorTag} colored player.");
+                colorTagOfLastDrawOfferer = myColorTag;
+            }
+            if (offerDrawCounter == 2)
+            {
+                if (colorTagOfLastDrawOfferer == myColorTag)
+                {
+                    offerDrawCounter = 1;
+                }
+                else
+                {
+                    Debug.Log($"Draw was accepted by {myColorTag} colored player.");
+                    hasGameEnded = true;
+                    myScoreSheet.SetNewMove("", "", "", "", currentRound, false, false, false, false, false, false, "None", true, hasGameEnded, false, true);
+                    terminationString = "Game drawn by agreement";
+                    offerDrawCounter = 0;
+                }
+            }
+        }
+    }
+
+    public void Resign()
+    {
+        if(!hasGameEnded)
+        {
+            ChessPlayer me = GetCurrentlyActivePlayer();
+            string myColorTag = me.GetMyChosenColor();
+            string myEnemyColorTag = me.GetMyEnemyColorTag();
+
+            hasGameEnded = true;
+            myScoreSheet.SetNewMove("", "", "", "", currentRound, false, false, false, false, false, false, myEnemyColorTag, false, hasGameEnded, true, false);
+            Debug.Log($"{myColorTag} colored player resigned. {myEnemyColorTag} colored player won.");
+            terminationString = "won by resignation";
+        }
+    }
+
+    public void ExportGame()
+    {
+        if (!hasGameEnded)
+            return;
+
+        ChessManager manager = chessManagerObject.GetComponent<ChessManager>();
+        string[] pgnHeading = manager.ExportGameInPGNFormat();
+
+        if(pgnHeading != null)
+            myScoreSheet.ExportGameAsPGN(pgnHeading[0], pgnHeading[1], pgnHeading[2], pgnHeading[3], pgnHeading[4], pgnHeading[5], pgnHeading[6], terminationString);
+    }
+
+    public bool HasGameEnded()
+    {
+        return hasGameEnded;
+    }
+
+    // Update is called once per frame
+    private void Update()
+    {
+        if(hasGameEnded && !exportEnabled)
+        {
+            exportButton.interactable = true;
+            exportEnabled = true;
+        }
     }
 }

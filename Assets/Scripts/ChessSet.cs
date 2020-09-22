@@ -11,16 +11,18 @@ public class ChessSet : MonoBehaviour
     private ChessBoard myBoard;
     private ChessPlayer myPlayer;
     private ChessPiece[,] pieceSet = new ChessPiece[2, 8]; // [0,] => Royalty row, [1,] => Pawn row
-    private List<Square> potentialMoves = new List<Square>();
+    private List<string> livingPiecesList = new List<string>();
     private ChessSet enemyChessSet;
+    private bool amIPromotingAPawn;
 
-    public void CreatePieceSet(ChessBoard chessBoard, ChessPlayer chessPlayer, int setIndex, ChessSet opponent)
+    public void CreatePieceSet(ChessBoard chessBoard, ChessPlayer chessPlayer, int setIndex, ChessSet opponent, Color32[] pieceSetColors, SpritePieceSet spriteSet)
     {
         myBoard = chessBoard;
         myPlayer = chessPlayer;
         myColorTag = myPlayer.GetMyChosenColor();
         mySetIndex = setIndex;
         enemyChessSet = opponent;
+        amIPromotingAPawn = false;
 
         if (myColorTag == "Dark")
         {
@@ -30,7 +32,7 @@ public class ChessSet : MonoBehaviour
                 {
                     Square currentSquare;
                     currentSquare = myBoard.board[row, column];
-                    SetPiece(currentSquare, row, column, myColorTag);
+                    SetPiece(currentSquare, row, column, myColorTag, pieceSetColors[1], spriteSet);
                 }
             }
 
@@ -44,19 +46,19 @@ public class ChessSet : MonoBehaviour
                 {
                     Square currentSquare;
                     currentSquare = myBoard.board[row, column];
-                    SetPiece(currentSquare, 7 - row, column, myColorTag);
+                    SetPiece(currentSquare, 7 - row, column, myColorTag, pieceSetColors[0], spriteSet);
                 }
             }
             transform.name = "Light Colored ChessSet";
         }
     }
 
-    private void SetPiece(Square currentSquare, int setRow, int setColumn, string playerColorTag)
+    private void SetPiece(Square currentSquare, int setRow, int setColumn, string playerColorTag, Color32 pieceColorSet, SpritePieceSet spriteSet)
     {
         Vector3 vector3 = currentSquare.transform.position;
         GameObject piece = Instantiate(piecePrefab, new Vector3(vector3.x, vector3.y, 0f), Quaternion.identity, gameObject.transform);
         pieceSet[setRow, setColumn] = piece.GetComponent<ChessPiece>();
-        pieceSet[setRow, setColumn].InitializePiece(currentSquare, playerColorTag, myBoard, this);
+        pieceSet[setRow, setColumn].InitializePiece(currentSquare, playerColorTag, myBoard, this, pieceColorSet, spriteSet);
     }
 
     public string GetColorTag()
@@ -139,10 +141,22 @@ public class ChessSet : MonoBehaviour
         return pieceSet;
     }
 
+    public bool AmIPromotingAPawn()
+    {
+        return amIPromotingAPawn;
+    }
+
+    public void SetPawnPromotingState(bool value)
+    {
+        amIPromotingAPawn = value;
+    }
+
     public bool IsSquareAttackedByMyPieces(Square desiredSquare, Square currentSquare)
     {
         foreach(ChessPiece piece in pieceSet)
         {
+            if (piece.GetPieceState() == "Dead") continue;
+
             if (piece.tag == "Pawn" && piece.GetMainPieceMoves().Contains(desiredSquare))
             {
                 var pieceXPosition = piece.transform.position.x;
@@ -555,5 +569,34 @@ public class ChessSet : MonoBehaviour
                 piece.SetPieceProtectionValue(false);
             }
         }
+    }
+
+    public bool AreThereAnyPotentialMoves()
+    {
+        foreach(ChessPiece piece in pieceSet)
+        {
+            if (piece.isActiveAndEnabled && piece.GetNumberOfPotentialMoves() != 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public List<string> GetListOfAllLivingPieces()
+    {
+        if(livingPiecesList.Count > 0)
+            livingPiecesList.Clear();
+
+        foreach(ChessPiece piece in pieceSet)
+        {
+            if(piece.isActiveAndEnabled)
+            {
+                livingPiecesList.Add(piece.tag);
+            }
+        }
+
+        return livingPiecesList;
     }
 }

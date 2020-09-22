@@ -1,0 +1,194 @@
+{
+  "colorList": [
+    {
+      "names": [
+        "Silver",
+        "Davys Grey"
+      ],
+      "hexCodes": [
+        "#C6C6C6",
+        "#525151"
+      ]
+    },
+    {
+      "names": [
+        "Platinum",
+        "Steel blue"
+      ],
+      "hexCodes": [
+        "#e7e8e3",
+        "#3e80c7"
+      ]
+    },
+    {
+      "names": [
+        "Beige",
+        "Moss green"
+      ],
+      "hexCodes": [
+        "#d9dbc3",
+        "#749654"
+      ]
+    },
+    {
+      "names": [
+        "Beaver",
+        "Dark liver"
+      ],
+      "hexCodes": [
+        "#A6806A",
+        "#5B5155"
+      ]
+    },
+    {
+      "names": [
+        "Middle blue",
+        "Teal blue"
+      ],
+      "hexCodes": [
+        "#7EC8D9",
+        "#38728A"
+      ]
+    },
+    {
+      "names": [
+        "Tan",
+        "Auburn"
+      ],
+      "hexCodes": [
+        "#D9C49C",
+        "#932D2D"
+      ]
+    },
+    {
+      "names": [
+        "Khaki Web",
+        "Dark Liver Horses"
+      ],
+      "hexCodes": [
+        "#C5B8A6",
+        "#593F39"
+      ]
+    },
+    {
+      "names": [
+        "Gray X 11 Gray",
+        "Dark Liver Horses"
+      ],
+      "hexCodes": [
+        "#BBB4B3",
+        "#593F39"
+      ]
+    },
+    {
+      "names": [
+        "Bone",
+        "Charcoal"
+      ],
+      "hexCodes": [
+        "#DAD0BC",
+        "#273E47"
+      ]
+    },
+    {
+      "names": [
+        "Pale silver",
+        "Auburn"
+      ],
+      "hexCodes": [
+        "#D1C2C2",
+        "#932D2D"
+      ]
+    },
+    {
+      "names": [
+        "Tuscany",
+        "Big Dip Oruby"
+      ],
+      "hexCodes": [
+        "#C6A0AA",
+        "#9D2B48"
+      ]
+    },
+    {
+      "names": [
+        "Timberwolf",
+        "Feldgrau"
+      ],
+      "hexCodes": [
+        "#CDCFC6",
+        "#475C48"
+      ]
+    },
+    {
+      "names": [
+        "Dutch White",
+        "Gold Crayola"
+      ],
+      "hexCodes": [
+        "#E9D9BD",
+        "#D9B676"
+      ]
+    },
+    {
+      "names": [
+        "Jasmine",
+        "Maize Crayola"
+      ],
+      "hexCodes": [
+        "#F9DD8A",
+        "#ECC756"
+      ]
+    },
+    {
+      "names": [
+        "Gray X 11 Gray",
+        "Onyx"
+      ],
+      "hexCodes": [
+        "#BFBFBF",
+        "#3D3D3D"
+      ]
+    },
+    {
+      "names": [
+        "Light Gray",
+        "Gray X 11 Gray"
+      ],
+      "hexCodes": [
+        "#CCCCCC",
+        "#B8B9B6"
+      ]
+    },
+    {
+      "names": [
+        "Middle Blue",
+        "Davys Grey"
+      ],
+      "hexCodes": [
+        "#83C3D0",
+        "#4C4D4B"
+      ]
+    },
+    {
+      "names": [
+        "Russian Green",
+        "Hunter Green"
+      ],
+      "hexCodes": [
+        "#5E8D6A",
+        "#366843"
+      ]
+    },
+    {
+      "names": [
+        "Peach Puff",
+        "Rajah"
+      ],
+      "hexCodes": [
+        "#F3D5B9",
+        "#FFAB5C"
+      ]
+    }
+  ]
+}

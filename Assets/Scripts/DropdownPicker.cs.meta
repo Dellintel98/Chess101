@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 885c346a5b513a446bae1464b4bdb64e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - timeControlText: {instanceID: 0}
+  - unlimitedButton: {instanceID: 0}
+  - bulletObject: {instanceID: 0}
+  - blitzObject: {instanceID: 0}
+  - rapidObject: {instanceID: 0}
+  - customObject: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

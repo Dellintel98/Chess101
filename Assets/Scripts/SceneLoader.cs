@@ -18,12 +18,6 @@ public class SceneLoader : MonoBehaviour
             case "ChessGame":
                 desiredSceneIndex = 2;
                 break;
-            case "GoMenu":
-                desiredSceneIndex = 3;
-                break;
-            case "GoGame":
-                desiredSceneIndex = 4;
-                break;
             default:
                 desiredSceneIndex = 0;
                 break;
@@ -34,6 +28,7 @@ public class SceneLoader : MonoBehaviour
 
     public void QuitGame()
     {
+        ChessGlobalControl.Instance.SaveBeforeExit();
         Application.Quit();
     }
 }

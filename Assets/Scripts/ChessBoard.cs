@@ -15,7 +15,7 @@ public class ChessBoard : MonoBehaviour
         
     }
 
-    public void CreateNewBoard()
+    public void CreateNewBoard(Color32[] boardColors)
     {
         for (int row = 7; row >= 0; row--)
         {
@@ -24,17 +24,17 @@ public class ChessBoard : MonoBehaviour
                 float x = (column * 2) - 7;
                 float y = 7 - (row * 2);
 
-                GenerateBoardSquare(row, column, x, y);
+                GenerateBoardSquare(row, column, x, y, boardColors);
             }
         }
     }
 
-    private void GenerateBoardSquare(int row, int column, float x, float y)
+    private void GenerateBoardSquare(int row, int column, float x, float y, Color32[] boardColorSet)
     {
         GameObject square = Instantiate(squarePrefab, new Vector3(x, y, 0f), Quaternion.identity, gameObject.transform);
         board[row, column] = square.GetComponent<Square>();
 
-        board[row, column].Setup(row, column);
+        board[row, column].Setup(row, column, boardColorSet);
     }
 
     public Square GetSquareByVector3(Vector3 rawPosition)

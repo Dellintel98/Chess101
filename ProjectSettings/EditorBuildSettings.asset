@@ -17,10 +17,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ChessGame.unity
     guid: e458549934bd988428b121e4b7e85037
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/GoMenu.unity
     guid: efc0d3f83ace67c4fb0888826b015abe
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/GoGame.unity
     guid: 37cbb9fc1f0b7eb4d9e6662f87d0f4cb
   m_configObjects: {}

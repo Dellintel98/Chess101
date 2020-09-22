@@ -1,0 +1,324 @@
+{
+  "colorList": [
+    {
+      "names": [
+        "White",
+        "Black"
+      ],
+      "hexCodes": [
+        "#FFFFFF",
+        "#000000"
+      ]
+    },
+    {
+      "names": [
+        "Tan",
+        "Charcoal"
+      ],
+      "hexCodes": [
+        "#d1b49b",
+        "#3f4859"
+      ]
+    },
+    {
+      "names": [
+        "Baby powder",
+        "Jet"
+      ],
+      "hexCodes": [
+        "#fcfefc",
+        "#3b3a3b"
+      ]
+    },
+    {
+      "names": [
+        "Platinum",
+        "Jet"
+      ],
+      "hexCodes": [
+        "#E5DFDC",
+        "#353132"
+      ]
+    },
+    {
+      "names": [
+        "Sage",
+        "Charcoal"
+      ],
+      "hexCodes": [
+        "#AEA784",
+        "#2D454E"
+      ]
+    },
+    {
+      "names": [
+        "Shadow",
+        "Dark Sienna"
+      ],
+      "hexCodes": [
+        "#8F8167",
+        "#3D1313"
+      ]
+    },
+    {
+      "names": [
+        "Cinereous",
+        "Raisin Black"
+      ],
+      "hexCodes": [
+        "#8F7C70",
+        "#251918"
+      ]
+    },
+    {
+      "names": [
+        "Rocket Metallic",
+        "Black Coffee"
+      ],
+      "hexCodes": [
+        "#8A7A76",
+        "#2F2422"
+      ]
+    },
+    {
+      "names": [
+        "Teal Blue",
+        "Rich Black FOGRA 29"
+      ],
+      "hexCodes": [
+        "#4A7482",
+        "#0F171A"
+      ]
+    },
+    {
+      "names": [
+        "Old Rose",
+        "Dark Sienna"
+      ],
+      "hexCodes": [
+        "#B27C7C",
+        "#351C1C"
+      ]
+    },
+    {
+      "names": [
+        "Eggplant",
+        "Wine"
+      ],
+      "hexCodes": [
+        "#553A42",
+        "#5E1B2C"
+      ]
+    },
+    {
+      "names": [
+        "Sage",
+        "Dark Jungle Green"
+      ],
+      "hexCodes": [
+        "#AEAB85",
+        "#0E1B11"
+      ]
+    },
+    {
+      "names": [
+        "Floral White",
+        "Dark Goldenrod"
+      ],
+      "hexCodes": [
+        "#FAF6F0",
+        "#C08F35"
+      ]
+    },
+    {
+      "names": [
+        "Cornsilk",
+        "Gold"
+      ],
+      "hexCodes": [
+        "#FDF4D8",
+        "#A58112"
+      ]
+    },
+    {
+      "names": [
+        "Gray Web",
+        "Eerie Black"
+      ],
+      "hexCodes": [
+        "#848484",
+        "#141414"
+      ]
+    },
+    {
+      "names": [
+        "Cultured",
+        "Jet"
+      ],
+      "hexCodes": [
+        "#f2f2f2",
+        "#333333"
+      ]
+    },
+    {
+      "names": [
+        "Platinum",
+        "Eerie Black"
+      ],
+      "hexCodes": [
+        "#E7E7E7",
+        "#141414"
+      ]
+    },
+    {
+      "names": [
+        "Cultured",
+        "Phthalo Green"
+      ],
+      "hexCodes": [
+        "#F2F2F2",
+        "#15291A"
+      ]
+    },
+    {
+      "names": [
+        "Beaver",
+        "Coyote Brown"
+      ],
+      "hexCodes": [
+        "#9C8876",
+        "#805B3B"
+      ]
+    },
+    {
+      "names": [
+        "Gainsboro",
+        "Phthalo Green"
+      ],
+      "hexCodes": [
+        "#E0E0E0",
+        "#15291A"
+      ]
+    },
+    {
+      "names": [
+        "Sage",
+        "Hunter Green"
+      ],
+      "hexCodes": [
+        "#ABA77F",
+        "#2A5034"
+      ]
+    },
+    {
+      "names": [
+        "Sage",
+        "Phthalo Green"
+      ],
+      "hexCodes": [
+        "#ABA77F",
+        "#15291A"
+      ]
+    },
+    {
+      "names": [
+        "Cultured",
+        "Eerie Black"
+      ],
+      "hexCodes": [
+        "#F2F2F2",
+        "#141414"
+      ]
+    },
+    {
+      "names": [
+        "Spanish Bistre",
+        "Black Olive"
+      ],
+      "hexCodes": [
+        "#8D793F",
+        "#2E2B23"
+      ]
+    },
+    {
+      "names": [
+        "Cultured",
+        "Jet"
+      ],
+      "hexCodes": [
+        "#F6F6F6",
+        "#292929"
+      ]
+    },
+    {
+      "names": [
+        "Ecru",
+        "Teal Blue"
+      ],
+      "hexCodes": [
+        "#BBA877",
+        "#527E8E"
+      ]
+    },
+    {
+      "names": [
+        "Alabaster",
+        "Rich Black FOGRA 29"
+      ],
+      "hexCodes": [
+        "#F1EDE4",
+        "#0F171A"
+      ]
+    },
+    {
+      "names": [
+        "Eggplant",
+        "Dark Sienna"
+      ],
+      "hexCodes": [
+        "#553A42",
+        "#3E131E"
+      ]
+    },
+    {
+      "names": [
+        "Eggplant",
+        "Xiketic"
+      ],
+      "hexCodes": [
+        "#553A42",
+        "#1E0B10"
+      ]
+    },
+    {
+      "names": [
+        "Old Lace",
+        "Dark Sienna"
+      ],
+      "hexCodes": [
+        "#F4EEE2",
+        "#3D1313"
+      ]
+    },
+    {
+      "names": [
+        "Cultured",
+        "Raisin Black"
+      ],
+      "hexCodes": [
+        "#F2F2F2",
+        "#251918"
+      ]
+    },
+    {
+      "names": [
+        "Cultured",
+        "Black Coffee"
+      ],
+      "hexCodes": [
+        "#F2F2F2",
+        "#2F2422"
+      ]
+    }
+  ]
+}

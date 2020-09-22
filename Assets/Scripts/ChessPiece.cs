@@ -5,13 +5,15 @@ using UnityEngine;
 
 public class ChessPiece : MonoBehaviour
 {
-    [SerializeField] public Sprite[] pieceSprites;
     [SerializeField] public GameObject shadowPrefab;
     [SerializeField] public GameObject promotionModalBoxPrefab;
 
     private Color32 pieceColor;
     private string myPlayerColorTag;
     private string pieceState;
+    private bool justBeenPromoted;
+    private bool kingSideCastling;
+    private bool queenSideCastling;
     private string myInitialTag;
     private ChessSet myChessSet;
     private ChessBoard myBoard;
@@ -25,26 +27,33 @@ public class ChessPiece : MonoBehaviour
     private bool amIBlocked;
     private bool amIProtectedByMyPieces;
     private bool iMoved;
+    private bool iCapturedEnemyPiece;
     private int moveCounter;
     private GameObject myShadow;
     private bool visibleShadow;
     private PromotionModalBox myModalBox;
+    private bool isPromotionModalBoxOpen;
+    private ChessGameplayManager myGame;
+    private SpritePieceSet spritePieceSet = new SpritePieceSet();
 
 
-    public void InitializePiece(Square boardPosition, string playerColorTag, ChessBoard chessBoard, ChessSet playerChessSet)
+    public void InitializePiece(Square boardPosition, string playerColorTag, ChessBoard chessBoard, ChessSet playerChessSet, Color32 pieceSetColor, SpritePieceSet spriteSet)
     {
-        int spriteIndex;
-
         myPlayerColorTag = playerColorTag;
         pieceState = "Alive";
         iMoved = false;
+        iCapturedEnemyPiece = false;
+        justBeenPromoted = false;
+        isPromotionModalBoxOpen = false;
+        kingSideCastling = false;
+        queenSideCastling = false;
         moveCounter = 0;
         attackingEnemyKing = false;
         defendingMyKing = false;
         amIBlocked = false;
         amIProtectedByMyPieces = false;
 
-    myChessSet = playerChessSet;
+        myChessSet = playerChessSet;
         myBoard = chessBoard;
         initialSquare = boardPosition;
         currentSquare = boardPosition;
@@ -52,9 +61,14 @@ public class ChessPiece : MonoBehaviour
 
         boardPosition.SetContainedPiece(this);
 
-        spriteIndex = SetInitialPieceTag();
-        SetPieceSprite(spriteIndex);
-        SetPieceColor();
+        SetInitialPieceTag();
+        spritePieceSet = spriteSet;
+        SetPieceSprite();
+
+        pieceColor = pieceSetColor;
+        GetComponent<SpriteRenderer>().color = pieceColor;
+
+        //SetPieceColor();
         SetPieceSortingLayer();
 
         CreatePieceShadow();
@@ -119,11 +133,10 @@ public class ChessPiece : MonoBehaviour
         GetComponent<SpriteRenderer>().color = pieceColor;
     }
 
-    private int SetInitialPieceTag()
+    private void SetInitialPieceTag()
     {
         int x = initialSquare.GetSquarePosition().x;
         int y = initialSquare.GetSquarePosition().y;
-        int spriteIndex;
         string pieceTag;
 
         if (x == 7 || x == 0)
@@ -131,40 +144,32 @@ public class ChessPiece : MonoBehaviour
             if (y == 4)
             {
                 pieceTag = "King";
-                spriteIndex = 4;
             }
             else if (y == 3)
             {
                 pieceTag = "Queen";
-                spriteIndex = 3;
             }
             else if (y == 2 || y == 5)
             {
                 pieceTag = "Bishop";
-                spriteIndex = 2;
             }
             else if (y == 1 || y == 6)
             {
                 pieceTag = "Knight";
-                spriteIndex = 1;
             }
             else
             {
                 pieceTag = "Rook";
-                spriteIndex = 0;
             }
         }
         else
         {
             pieceTag = "Pawn";
-            spriteIndex = 5;
         }
 
         SetPieceTag(pieceTag);
         myInitialTag = pieceTag;
         SetPieceName(y);
-
-        return spriteIndex;
     }
 
     private void SetPieceTag(string pieceTag)
@@ -179,9 +184,29 @@ public class ChessPiece : MonoBehaviour
         transform.name = $"{myPlayerColorTag}{transform.tag} ({index})";
     }
 
-    private void SetPieceSprite(int spriteIndex)
+    private void SetPieceSprite()
     {
-        GetComponent<SpriteRenderer>().sprite = pieceSprites[spriteIndex];
+        switch(tag)
+        {
+            case "Rook":
+                GetComponent<SpriteRenderer>().sprite = spritePieceSet.rook;
+                break;
+            case "Knight":
+                GetComponent<SpriteRenderer>().sprite = spritePieceSet.knight;
+                break;
+            case "Bishop":
+                GetComponent<SpriteRenderer>().sprite = spritePieceSet.bishop;
+                break;
+            case "Queen":
+                GetComponent<SpriteRenderer>().sprite = spritePieceSet.queen;
+                break;
+            case "King":
+                GetComponent<SpriteRenderer>().sprite = spritePieceSet.king;
+                break;
+            case "Pawn":
+                GetComponent<SpriteRenderer>().sprite = spritePieceSet.pawn;
+                break;
+        }
     }
 
     private void SetPieceSpriteBySpriteElement(Sprite pieceSprite)
@@ -216,7 +241,6 @@ public class ChessPiece : MonoBehaviour
     {
         Vector2 currentCursorPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
         Vector2 currentWorldPosition = Camera.main.ScreenToWorldPoint(currentCursorPosition);
-        //Vector2 currentBoardPosition = SnapToBoardGrid(currentWorldPosition);
 
         return currentWorldPosition;
     }
@@ -246,7 +270,7 @@ public class ChessPiece : MonoBehaviour
         {
             currentSquare.GetContainedPiece().gameObject.SetActive(false);
             currentSquare.GetContainedPiece().SetPieceState("Dead");
-            //Destroy(currentSquare.GetContainedPiece().gameObject);
+            iCapturedEnemyPiece = true;
         }
         else if(!currentSquare.GetContainedPiece() && transform.tag == "Pawn")
         {
@@ -270,10 +294,10 @@ public class ChessPiece : MonoBehaviour
 
             if (neighborPiece && neighborPiece.GetMyColorTag() != myPlayerColorTag && neighborPiece.GetNumberOfMoves() == 1)
             {
-                //Destroy(neighborSquare.GetContainedPiece().gameObject);
                 neighborSquare.GetContainedPiece().gameObject.SetActive(false);
                 neighborSquare.GetContainedPiece().SetPieceState("Dead");
                 neighborSquare.SetContainedPiece(null);
+                iCapturedEnemyPiece = true;
             }
         }
 
@@ -338,7 +362,13 @@ public class ChessPiece : MonoBehaviour
 
     public void ClearPotentialMovesIfDeadOrBlocked()
     {
-        if(pieceState == "Dead" || amIBlocked)
+        if (pieceState == "Dead")
+        {
+            potentialMoves.Clear();
+            mainPieceMoves.Clear();
+            attackingEnemyKing = false;
+        }
+        else if (amIBlocked)
         {
             potentialMoves.Clear();
         }
@@ -355,9 +385,9 @@ public class ChessPiece : MonoBehaviour
         {
             potentialMoves.Clear();
             defendingMyKing = false;
-            attackingEnemyKing = false;
             amIBlocked = false;
         }
+            attackingEnemyKing = false;
 
         switch (transform.tag)
         {
@@ -389,6 +419,9 @@ public class ChessPiece : MonoBehaviour
         if (mainPieceMoves.Count > 0)
         {
             mainPieceMoves.Clear();
+            defendingMyKing = false;
+            attackingEnemyKing = false;
+            amIBlocked = false;
         }
 
         float myX = transform.position.x;
@@ -569,6 +602,9 @@ public class ChessPiece : MonoBehaviour
         if(mainPieceMoves.Count > 0)
         {
             mainPieceMoves.Clear();
+            defendingMyKing = false;
+            attackingEnemyKing = false;
+            amIBlocked = false;
         }
 
         float numberOfPotentialForwardMoves = 2f;
@@ -706,7 +742,7 @@ public class ChessPiece : MonoBehaviour
 
                     break;
                 }
-                else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag == "King")
+                else if (square && piece && piece.GetMyColorTag() != myPlayerColorTag && piece.tag == "King" && tag != "Pawn")
                 {
                     attackingEnemyKing = true;
                     break;
@@ -828,14 +864,22 @@ public class ChessPiece : MonoBehaviour
         return calculations;
     }
 
-    public void ShowPawnPromotionModalBox()
+    public void ShowPawnPromotionModalBox(ChessGameplayManager game)
     {
+        isPromotionModalBoxOpen = true;
         CreatePawnPromotionModalBox();
+        justBeenPromoted = true;
+        myGame = game;
+        myGame.SetPromotionInProcess();
     }
 
     public void DestroyPawnPromotionModalBox()
     {
         Destroy(myModalBox.gameObject);
+        isPromotionModalBoxOpen = false;
+        myChessSet.SetPawnPromotingState(false);
+        myGame.SetPromotionProcessEnd();
+        myGame.SetupPawnAfterPromotion(this);
     }
 
     private void CreatePawnPromotionModalBox()
@@ -854,7 +898,8 @@ public class ChessPiece : MonoBehaviour
         myModalBox = modalBox.GetComponent<PromotionModalBox>();
         myModalBox.GetComponent<SpriteRenderer>().sortingLayerName = "PiecesLayer";
 
-        myModalBox.SetupPromotionalModalBox(this, pieceSprites);
+        myModalBox.SetupPromotionalModalBox(this, spritePieceSet);
+        myChessSet.SetPawnPromotingState(true);
     }
 
     public bool IsSquareSafeForKing(Square desiredMove)
@@ -956,5 +1001,73 @@ public class ChessPiece : MonoBehaviour
     public bool AmIProtectedByMyPieces()
     {
         return amIProtectedByMyPieces;
+    }
+
+    public bool DidICaptureEnemyPiece()
+    {
+        return iCapturedEnemyPiece;
+    }
+
+    public void ResetCaptureEnemyPiece()
+    {
+        iCapturedEnemyPiece = false;
+    }
+
+    public string GetMyInitialTag()
+    {
+        return myInitialTag;
+    }
+
+    public bool HaveIJustBeenPromoted()
+    {
+        return justBeenPromoted;
+    }
+
+    public void ResetPromotionState()
+    {
+        justBeenPromoted = false;
+    }
+
+    public bool GetCastling(string castlingType)
+    {
+        if (castlingType == "Kingside")
+            return kingSideCastling;
+        else if (castlingType == "Queenside")
+            return queenSideCastling;
+        else if (castlingType == "Either")
+        {
+            if (kingSideCastling)
+                return kingSideCastling;
+            else if (queenSideCastling)
+                return queenSideCastling;
+        }
+        
+        return false;
+    }
+
+    public void ResetCastling()
+    {
+        kingSideCastling = false;
+        queenSideCastling = false;
+    }
+
+    public void SetCastling(string castlingType)
+    {
+        if (castlingType == "Kingside")
+            kingSideCastling = true;
+        else if (castlingType == "Queenside")
+            queenSideCastling = true;
+        else
+            ResetCastling();
+    }
+
+    public bool GetStateOfPromotionModalBox()
+    {
+        return isPromotionModalBoxOpen;
+    }
+
+    public int GetNumberOfPotentialMoves()
+    {
+        return potentialMoves.Count;
     }
 }
